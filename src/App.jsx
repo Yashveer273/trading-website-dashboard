@@ -19,6 +19,8 @@ import ManageProducts from "./ManageProducts";
 import Giftcodes from "./Giftcodes";
 
 import Teams from "./Teams";
+import QRCodeSubmit from "./QRCodeSubmit";
+import LucySpin from "./lucySpin";
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
         <Route path="/phonepe-gateway" element={<PaymentStatus/>}/>
         <Route path="/settings" element={<Setting/>}/>
         <Route path="/logout" element={<Logout/>}/>
+        <Route path="/QRCodeSubmit" element={<QRCodeSubmit/>}/>
+        <Route path="/LucySpin" element={<LucySpin/>}/>
         <Route path="/giftcodes" element={<Giftcodes/>}/>
 
          <Route path="/teams/:id" element={<Teams />} />

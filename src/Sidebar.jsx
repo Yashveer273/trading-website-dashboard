@@ -40,6 +40,18 @@ function Sidebar() {
           </Link>
         </li>
         <li className="sidebar-item">
+          <Link to="/QRCodeSubmit">
+            <BsWallet2 className="icon" />
+            Add QR Code
+          </Link>
+        </li>
+        <li className="sidebar-item">
+          <Link to="/LucySpin">
+            <BsWallet2 className="icon" />
+            Lucky Spin
+          </Link>
+        </li>
+        <li className="sidebar-item">
           <Link to="/wallets">
             <BsWallet2 className="icon" />
             Wallets

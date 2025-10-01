@@ -1,45 +1,161 @@
-import React from "react";
-import "./PaymentStatus.css";
-import paymentData from "./paymentData.json"; // Import JSON file
+import React, { useState, useEffect, useCallback } from 'react';
+import { RefreshCw, CheckCircle, Loader2, X, AlertTriangle, ListChecks, DollarSign } from 'lucide-react';
+import './PaymentStatus.css'; // Import CSS
 
-function PaymentStatus() {
-  return (
-    <div className="payment-container">
-      <h2>Payment Status Management</h2>
+const API_ADMIN_PENDING = 'http://localhost:5004/QR/api/admin/pending';
+const API_ADMIN_UPDATE = 'http://localhost:5004/QR/api/admin/payments/';
 
-      <table className="payment-table">
-        <thead>
-          <tr>
-            <th style={{background:"#f5f569ff"}}>ID</th>
-            <th style={{background:"#f5f569ff"}}>Mobile</th>
-            <th style={{background:"#f5f569ff"}}>Transaction ID</th>
-            <th style={{background:"#f5f569ff"}}>Amount</th>
-            <th style={{background:"#f5f569ff"}}>Status</th>
-            <th style={{background:"#f5f569ff"}}>Created At</th>
-            <th style={{background:"#f5f569ff"}}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paymentData.map((item) => (
-            <tr key={item.id}>
-              <td>{item.id}</td>
-              <td>{item.mobile}</td>
-              <td>{item.transactionId || "—"}</td>
-              <td>{item.amount}</td>
-              <td className={item.status === "success" ? "status-success" : "status-fail"}>
-                {item.status}
-              </td>
-              <td>{item.createdAt}</td>
-              <td>
-                <button className="btn-approve">Approve</button>
-                <button className="btn-fail">Fail</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+async function handleResponse(res) {
+  try {
+    const clonedRes = res.clone();
+    return await clonedRes.json();
+  } catch (e) {
+    console.log(e);
+    return await res.text();
+  }
+}
+
+const PaymentStatus = () => {
+  const [pendingPayments, setPendingPayments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const MessageDisplay = ({ text }) => {
+    if (!text) return null;
+
+    const isSuccess = text.includes('Updated') || text.includes('Approved');
+    const isError = text.includes('failed') || text.includes('Error:');
+
+    let wrapperClass = "msg-box";
+    let icon;
+
+    if (isSuccess) {
+      wrapperClass += " success";
+      icon = <CheckCircle className="icon" />;
+    } else if (isError) {
+      wrapperClass += " error";
+      icon = <X className="icon" />;
+    } else {
+      wrapperClass += " info";
+      icon = <Loader2 className="icon spin" />;
+    }
+
+    return (
+      <div className={wrapperClass}>
+        {icon}
+        <span>{text}</span>
+      </div>
+    );
+  };
+
+  const fetchPendingPayments = useCallback(async () => {
+    setIsLoading(true);
+    setMessage('Fetching pending payments...');
+    setPendingPayments([]);
+
+    try {
+      const res = await fetch(API_ADMIN_PENDING);
+      const data = await handleResponse(res);
+
+      if (!res.ok) {
+        throw new Error(`Failed: ${res.status}`);
+      }
+
+      if (Array.isArray(data)) {
+        setPendingPayments(data);
+        setMessage(`${data.length} pending payments loaded.`);
+      } else {
+        throw new Error('Server response not a list.');
+      }
+    } catch (error) {
+      setMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPendingPayments();
+  }, [fetchPendingPayments]);
+
+  const updatePaymentStatus = useCallback(async (id, status) => {
+    setMessage(status ? 'Approving payment...' : 'Rejecting payment...');
+
+    try {
+      const res = await fetch(`${API_ADMIN_UPDATE}${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approved: status }),
+      });
+
+      const resultBody = await handleResponse(res);
+      if (!res.ok) throw new Error(resultBody.message || res.statusText);
+
+      setMessage(`Payment ID ${id} ${status ? 'Approved' : 'Rejected'}.`);
+      fetchPendingPayments();
+    } catch (error) {
+      setMessage(`Update failed: ${error.message}`);
+    }
+  }, [fetchPendingPayments]);
+
+  const PaymentItem = ({ payment }) => (
+    <div className="payment-card">
+      <div className="payment-header">
+        <div className="payment-user">
+          <p>User ID: <span>{payment.userId}</span></p>
+          <p>UTR: <span>{payment.utr}</span></p>
+        </div>
+        <p className="payment-amount">
+          <DollarSign className="icon" />
+          {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(payment.amount)}
+        </p>
+      </div>
+
+      <div className="payment-body">
+        <div className="qr-box">
+          <p>QR Image Proof:</p>
+          <img
+            src={payment.qrUrl}
+            alt="QR Proof"
+            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96?text=QR+Not+Found" }}
+          />
+        </div>
+        <div className="payment-actions">
+          <button onClick={() => updatePaymentStatus(payment._id, true)} disabled={isLoading} className="approve-btn">
+            <ListChecks className="icon" /> Approve
+          </button>
+          <button onClick={() => updatePaymentStatus(payment._id, false)} disabled={isLoading} className="reject-btn">
+            <X className="icon" /> Reject
+          </button>
+        </div>
+      </div>
     </div>
   );
-}
+
+  return (
+    <div className="page-wrapper">
+      <div className="page-content">
+        <div className="page-header">
+          <h1><AlertTriangle className="icon" /> Admin: Pending Payments</h1>
+          <button onClick={fetchPendingPayments} disabled={isLoading} className="fetch-btn">
+            <RefreshCw className={`icon ${isLoading ? 'spin' : ''}`} />
+            {isLoading ? 'Loading...' : 'Fetch Pending Payments'}
+          </button>
+          <MessageDisplay text={message} />
+        </div>
+
+        <div className="payment-list">
+          {!isLoading && pendingPayments.length === 0 && message.includes("loaded") && (
+            <div className="no-payments">
+              <CheckCircle className="icon" />
+              <p>No pending payments found. All clear!</p>
+            </div>
+          )}
+          {pendingPayments.map(p => <PaymentItem key={p._id} payment={p} />)}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default PaymentStatus;
