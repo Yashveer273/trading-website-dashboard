@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base URL for the backend API
-const API_BASE_URL = "http://localhost:5000/"; // replace with your backend URL
+const API_BASE_URL = "http://localhost:5004/"; // replace with your backend URL
 
 // Get all giftcodes (optional limit)
 export const getGiftcodes = async (limit = 0) => {
@@ -28,7 +28,10 @@ export const getGiftcodeById = async (id) => {
 // Create a new giftcode
 export const createGiftcode = async (giftcodeData) => {
   try {
-    const res = await axios.post(`${API_BASE_URL}api/giftcodes/add`, giftcodeData);
+    const res = await axios.post(
+      `${API_BASE_URL}api/giftcodes/add`,
+      giftcodeData
+    );
     return res.data;
   } catch (err) {
     console.error("Error creating giftcode:", err);
@@ -39,7 +42,10 @@ export const createGiftcode = async (giftcodeData) => {
 // Update giftcode by ID
 export const updateGiftcode = async (id, giftcodeData) => {
   try {
-    const res = await axios.put(`${API_BASE_URL}api/giftcodes/${id}`, giftcodeData);
+    const res = await axios.put(
+      `${API_BASE_URL}api/giftcodes/${id}`,
+      giftcodeData
+    );
     return res.data;
   } catch (err) {
     console.error("Error updating giftcode:", err);
@@ -57,8 +63,6 @@ export const deleteGiftcode = async (id) => {
     throw err;
   }
 };
-
-
 
 // -----------------Product api -------------------------
 export const getProducts = async (limit = 0) => {
@@ -86,18 +90,13 @@ export const getProductById = async (id) => {
 export const createProduct = async (productData) => {
   console.log(productData);
   try {
-    
-
-    // Append all fields
-   
-
-    // If productData.image is a File object (from input type="file")
-    // it will be included automatically in FormData
-    // If it's a string (URL), backend will ignore it and keep blank or previous URL
-
-    const res = await axios.post(`${API_BASE_URL}api/products/add`, productData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axios.post(
+      `${API_BASE_URL}api/products/add`,
+      productData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
 
     return res.data.product;
   } catch (err) {
@@ -108,8 +107,12 @@ export const createProduct = async (productData) => {
 
 // Update product
 export const updateProduct = async (id, productData) => {
+
   try {
-    const res = await axios.put(`${API_BASE_URL}api/products/${id}`, productData);
+    const res = await axios.put(
+      `${API_BASE_URL}api/products/${id}`,
+      productData
+    );
     return res.data.product;
   } catch (err) {
     console.error("Error updating product:", err);
@@ -125,5 +128,13 @@ export const deleteProduct = async (id) => {
   } catch (err) {
     console.error("Error deleting product:", err);
     throw err;
+  }
+};
+export const fetchUsers = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}api/users`);
+    return res;
+  } catch (err) {
+    return err;
   }
 };

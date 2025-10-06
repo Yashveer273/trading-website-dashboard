@@ -30,7 +30,7 @@ function Sidebar() {
         <li className="sidebar-item">
           <Link to="/">
             <BsGrid1X2Fill className="icon" />
-            Dashboard
+            Product Purchase History
           </Link>
         </li>
         <li className="sidebar-item">
@@ -51,28 +51,23 @@ function Sidebar() {
             Lucky Spin
           </Link>
         </li>
-        <li className="sidebar-item">
-          <Link to="/wallets">
-            <BsWallet2 className="icon" />
-            Wallets
-          </Link>
-        </li>
+        
         <li className="sidebar-item">
           <Link to="/recharge">
             <BsCashStack className="icon" />
-            Recharge
+            Diposit History
           </Link>
         </li>
         <li className="sidebar-item">
           <Link to="/withdraw">
             <BsArrowUpRightCircle className="icon" />
-            Withdraw
+            Withdraw History
           </Link>
         </li>
         <li className="sidebar-item">
-          <Link to="/all-orders">
+          <Link to="/WithdrawRequest">
             <BsBag className="icon" />
-            All Orders
+            Withdraw Request
           </Link>
         </li>
         <li className="sidebar-item">
@@ -99,24 +94,14 @@ function Sidebar() {
             Claim History
           </Link>
         </li>
+       
         <li className="sidebar-item">
-          <Link to="/all-banks">
+          <Link to="/payment-status">
             <BsCreditCard className="icon" />
-            All Banks
+            Diposit Request
           </Link>
         </li>
-        <li className="sidebar-item">
-          <Link to="/phonepe-gateway">
-            <BsCreditCard className="icon" />
-            PhonePe Gateway
-          </Link>
-        </li>
-        <li className="sidebar-item">
-          <Link to="/settings">
-            <BsGear className="icon" />
-            Settings
-          </Link>
-        </li>
+        
         <li className="sidebar-item">
           <Link to="/logout">
             <BsPower className="icon" />

@@ -43,7 +43,8 @@ const QRCodeSubmit = () => {
 
     setFiles(prev => [...prev, ...filesToAdd]);
     event.target.value = null;
-  }, [filesCount, files]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRemoveFile = (index) => {
     setFiles(prev => prev.filter((_, i) => i !== index));

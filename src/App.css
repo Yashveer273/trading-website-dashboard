@@ -15,7 +15,7 @@ body {
     "sidebar header"
     "sidebar main";
   height: 100vh;
-  overflow: hidden;
+  overflow:scroll;
 }
 
 /* Sidebar */
@@ -28,7 +28,8 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* allow scrolling if items exceed height */
+  overflow-y: scroll; /* allow scrolling if items exceed height */
+
 }
 
 .sidebar-user {

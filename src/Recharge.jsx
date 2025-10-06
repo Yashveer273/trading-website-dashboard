@@ -1,49 +1,103 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import "./Recharge.css";
-import rechargeData from "./rechargeData.json";
+
+const API_BASE = "http://localhost:5004/QR";
 
 function Recharge() {
+  const [recharges, setRecharges] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+
+  const fetchRecharges = async (pageNumber = 1) => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE}/recharge-list?page=${pageNumber}&limit=10`);
+      if (res.data.success) {
+        setRecharges(res.data.data);
+        setPage(res.data.currentPage);
+        setTotalPages(res.data.totalPages);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching recharge data:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecharges();
+  }, []);
+
+ 
+
+
+
+  const filteredRecharges = recharges.filter(
+    (r) =>
+      r._id.includes(search) ||
+      r.userId.includes(search)
+       ||
+      r.utr.includes(search)
+      
+  );
+
   return (
     <div className="recharge-container">
       <h2>Recharge Management</h2>
-      
+
       <div className="search-box">
-        <input type="text" placeholder="Search by mobile or transaction ID..." />
+        <input
+          type="text"
+          placeholder="Search by mobile or transaction ID..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
-      <table className="recharge-table">
-        <thead>
-          <tr>
-            <th style={{background:"#f5f569ff"}}>ID</th>
-            <th style={{background:"#f5f569ff"}}>Mobile</th>
-            <th style={{background:"#f5f569ff"}}>Amount</th>
-            <th style={{background:"#f5f569ff"}}>Date</th>
-            <th style={{background:"#f5f569ff"}}>Status</th>
-            <th style={{background:"#f5f569ff"}}>Transaction ID</th>
-            <th style={{background:"#f5f569ff"}}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rechargeData.map((rec) => (
-            <tr key={rec.id}>
-              <td>{rec.id}</td>
-              <td>{rec.mobile}</td>
-              <td>{rec.amount}</td>
-              <td>{rec.date}</td>
-              <td>{rec.status}</td>
-              <td>{rec.txnId || "-"}</td>
-              <td>
-                {rec.status === "Pending" ? "Approve" : rec.status === "Approved" ? "Revert" : "-"}
-              </td>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <table className="recharge-table">
+          <thead>
+            <tr>
+              <th style={{ background: "#f5f569ff" }}>ID</th>
+              <th style={{ background: "#f5f569ff" }}>User ID</th>
+              <th style={{ background: "#f5f569ff" }}>Utr</th>
+              <th style={{ background: "#f5f569ff" }}>Amount</th>
+              <th style={{ background: "#f5f569ff" }}>Date</th>
+              <th style={{ background: "#f5f569ff" }}>Status</th>
+              
+              
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredRecharges.map((rec) => (
+              <tr key={rec._id}>
+                <td>{rec._id}</td>
+                <td>{rec.userId}</td>
+                 <td>{rec.utr || "-"}</td>
+                <td>₹{rec.amount}</td>
+                <td>{new Date(rec.createdAt).toLocaleString()}</td>
+                <td>{rec.approved}</td>
+               
+                
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <div className="pagination">
-        <button>1</button>
-        <button>2</button>
-        <button>Next</button>
+        <button onClick={() => fetchRecharges(page - 1)} disabled={page === 1}>
+          Prev
+        </button>
+        <span>{page} / {totalPages}</span>
+        <button onClick={() => fetchRecharges(page + 1)} disabled={page === totalPages}>
+          Next
+        </button>
       </div>
     </div>
   );

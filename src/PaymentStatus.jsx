@@ -79,7 +79,7 @@ const PaymentStatus = () => {
   }, [fetchPendingPayments]);
 
   const updatePaymentStatus = useCallback(async (id, status) => {
-    setMessage(status ? 'Approving payment...' : 'Rejecting payment...');
+    setMessage(status=="Approved" ? 'Approving payment...' : 'Rejecting payment...');
 
     try {
       const res = await fetch(`${API_ADMIN_UPDATE}${id}`, {
@@ -91,7 +91,7 @@ const PaymentStatus = () => {
       const resultBody = await handleResponse(res);
       if (!res.ok) throw new Error(resultBody.message || res.statusText);
 
-      setMessage(`Payment ID ${id} ${status ? 'Approved' : 'Rejected'}.`);
+      setMessage(`Payment ID ${id} ${status=="Approved" ? 'Approved' : 'Rejected'}.`);
       fetchPendingPayments();
     } catch (error) {
       setMessage(`Update failed: ${error.message}`);
@@ -121,10 +121,10 @@ const PaymentStatus = () => {
           />
         </div>
         <div className="payment-actions">
-          <button onClick={() => updatePaymentStatus(payment._id, true)} disabled={isLoading} className="approve-btn">
+          <button onClick={() => updatePaymentStatus(payment._id, "Approve")} disabled={isLoading} className="approve-btn">
             <ListChecks className="icon" /> Approve
           </button>
-          <button onClick={() => updatePaymentStatus(payment._id, false)} disabled={isLoading} className="reject-btn">
+          <button onClick={() => updatePaymentStatus(payment._id, "Reject")} disabled={isLoading} className="reject-btn">
             <X className="icon" /> Reject
           </button>
         </div>

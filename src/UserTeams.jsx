@@ -9,7 +9,7 @@ function UserTeams() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/users/${userId}`);
+        const res = await axios.get(`http://localhost:5004/api/users/${userId}`);
         setUser(res.data);
       } catch (err) {
         console.error(err);
