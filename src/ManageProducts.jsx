@@ -84,7 +84,7 @@ function ManageProducts() {
 
   const handleAddProduct = async () => {
     const { name, price, cycleType, cycleValue, daily, hour, image, badge, purchaseType } = productForm;
-
+console.log(productForm);
     if (!name || !price || !cycleValue || (cycleType === "day" && !daily) || (cycleType === "hour" && !hour)) {
       showMessage("Please fill all required fields!", "error");
       return;
@@ -129,7 +129,7 @@ function ManageProducts() {
         purchaseType: "One time buy",
       });
     } catch (err) {
-      console.error(err);
+      console.log(err);
       showMessage(editingProductId ? "Failed to update product" : "Failed to add product", "error");
     }
   };
