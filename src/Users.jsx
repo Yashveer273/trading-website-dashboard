@@ -412,7 +412,7 @@ const UserDetails = ({ selectedUserFromList, onBack }) => {
   // Fetch full details of the user
   const detailUrl = `${API_BASE_URL}api/users/details/${formatOid(selectedUserFromList._id)}`;
   const { data: detailData, loading: detailLoading, error: detailError, refetch: refetchDetails } = useFetch(detailUrl, []);
-  
+
   const user = detailData?.user || selectedUserFromList; // Use fetched data, fallback to list data
   
   const [withdrawLimit, setWithdrawLimit] = useState(user.withdrawLimit);
@@ -426,7 +426,7 @@ const UserDetails = ({ selectedUserFromList, onBack }) => {
   if (detailLoading && !detailData) return <div className="loader-full-page"><Loader className="animate-spin text-indigo-500" size={64} /> <p>Loading User Details...</p></div>;
   if (detailError) return <div className="error-box">Error loading user details: {detailError}</div>;
   if (!user) return <div className="error-box">User data missing.</div>;
-console.log(user)
+
   const {
     _id, phone, password, referralCode, referredBy,
     totalBuy, pendingIncome, productIncome, tasksReward,
@@ -480,8 +480,8 @@ console.log(user)
         <ChevronLeft style={{ width: 16, height: 16, marginRight: 8 }} /> Back to All Users
       </button>
 
-      <h1 className="h1-detail">{phone}</h1>
-      <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: 32 }}>User OID: {formatOid(_id)} | Created At: {formatDate(user.createdAt)}</p>
+      <h1 className="h1-detail">Id | {formatOid(_id)}</h1>
+      <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: 32 }}>User phone: {phone} | Created At: {formatDate(user.createdAt)}</p>
 
       {/* --- FINANCIAL OVERVIEW --- */}
       <div className="card-grid-4">
@@ -555,7 +555,7 @@ console.log(user)
         <div className="info-grid">
             <DetailItem label="Spins Today" value={luckySpin.spinsToday || 0} />
             <DetailItem label="Spin Limit" value={luckySpin.SpinLimit || 0} />
-            <DetailItem label="Last Spin Date" value={luckySpin.lastSpinDate ? new Date(luckySpin.lastSpinDate).toLocaleString() : 'N/A'} />
+            <DetailItem label="Last Spin Date" value={ formatDate(luckySpin.createdAt) } />
             <DetailItem label="Lucky Spin OID" value={formatOid(luckySpin._id)} />
         </div>
       </div>
