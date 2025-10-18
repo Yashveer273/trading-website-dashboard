@@ -1,7 +1,10 @@
 import axios from "axios";
 
 // Base URL for the backend API
-const API_BASE_URL = "http://localhost:5004/"; // replace with your backend URL
+export const API_BASE_URL = "http://localhost:5004/"; 
+export const API_BASE_URL2 = "http://localhost:5004"; 
+// export const API_BASE_URL = "https://bdgwin.com.co/";
+// export const API_BASE_URL2 = "https://bdgwin.com.co";
 
 // Get all giftcodes (optional limit)
 export const getGiftcodes = async (limit = 0) => {
@@ -130,11 +133,156 @@ export const deleteProduct = async (id) => {
     throw err;
   }
 };
-export const fetchUsers = async () => {
+
+
+// ✅ GET: Fetch all explanations
+export const fetchExplanationsApi = async () => {
+  const res = await fetch(`${API_BASE_URL}QR/api/explanations`);
+  const data = await res.json();
+  if (!data.success) throw new Error("Failed to fetch explanations");
+  return data;
+};
+
+// ✅ POST: Add new explanation
+export const createExplanationApi = async (text) => {
+  const res = await fetch(`${API_BASE_URL}QR/api/explanations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error("Failed to create explanation");
+  return data;
+};
+
+// ✅ PUT: Update explanation
+export const updateExplanationApi = async (id, text) => {
+  const res = await fetch(`${API_BASE_URL}QR/api/explanations/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error("Failed to update explanation");
+  return data;
+};
+
+// ✅ DELETE: Remove explanation
+export const deleteExplanationApi = async (id) => {
+  const res = await fetch(`${API_BASE_URL}QR/api/explanations/${id}`, {
+    method: "DELETE",
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error("Failed to delete explanation");
+  return data;
+};
+export const uploadQR = async (formData) => {
+   const res = await fetch(`${API_BASE_URL}QR/api/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+  return res;
+};
+
+
+export const fetchQRs = async () => {
+  const res = await fetch(`${API_BASE_URL}QR/api/qrs`);
+  const data = await res.json();
+  return data;
+};
+
+export const updateQR = async (id, file) => {
+  const formData = new FormData();
+  formData.append('qr', file);
+
+  const res = await fetch(`${API_BASE_URL}QR/api/qrs/${id}`, {
+    method: 'PUT',
+    body: formData,
+  });
+  const data = await res.json();
+  return data;
+};
+
+export const deleteQR = async (id) => {
+  const res = await fetch(`${API_BASE_URL}QR/api/qrs/${id}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  return data;
+};
+
+
+
+
+
+// ✅ 1. Get all users (paginated)
+export const fetchUsers = async (page = 1, limit = 10) => {
   try {
-    const res = await axios.get(`${API_BASE_URL}api/users`);
-    return res;
+    const res = await axios.get(`${API_BASE_URL}api/users/all?page=${page}&limit=${limit}`);
+    return res.data;
   } catch (err) {
-    return err;
+    console.error("Error fetching users:", err);
+    throw err;
+  }
+};
+
+// ✅ 2. Update withdraw limit
+export const updateWithdrawLimit = async (userId, limit) => {
+  try {
+    const res = await axios.put(`${API_BASE_URL}api/users/${userId}/withdraw-limit`, { limit });
+    return res.data;
+  } catch (err) {
+    console.error("Error updating withdraw limit:", err);
+    throw err;
+  }
+};
+
+// ✅ 3. Get user details (with first 10 of each team)
+export const getUserDetails = async (userId) => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}api/users/details/${userId}`);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching user details:", err);
+    throw err;
+  }
+};
+
+// ✅ 4. Get paginated team data (team1, team2, team3)
+export const getTeamData = async (userId, type, page = 1, limit = 10) => {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}api/users/${userId}/team?type=${type}&page=${page}&limit=${limit}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error(`Error fetching ${type} data:`, err);
+    throw err;
+  }
+};
+
+// ✅ 5. Get paginated purchase history
+export const getPurchases = async (userId, page = 1, limit = 10) => {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}api/users/${userId}/purchases?page=${page}&limit=${limit}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching purchases:", err);
+    throw err;
+  }
+};
+
+// ✅ 6. Get paginated withdraw history
+export const getWithdraws = async (userId, page = 1, limit = 10) => {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}api/users/${userId}/withdraws?page=${page}&limit=${limit}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching withdraw history:", err);
+    throw err;
   }
 };

@@ -4,6 +4,7 @@
   padding: 2rem;
   font-family: sans-serif;
   overflow: auto;
+  width: 100%;
 }
 
 .page-content {

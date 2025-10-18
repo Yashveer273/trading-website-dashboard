@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "./api";
 
 function UserTeams() {
   const { userId } = useParams();
@@ -9,7 +10,7 @@ function UserTeams() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`http://localhost:5004/api/users/${userId}`);
+        const res = await axios.get(`${API_BASE_URL}api/users/${userId}`);
         setUser(res.data);
       } catch (err) {
         console.error(err);

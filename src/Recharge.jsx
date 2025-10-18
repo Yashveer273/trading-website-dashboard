@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Recharge.css";
+import { API_BASE_URL } from "./api";
 
-const API_BASE = "http://localhost:5004/QR";
+const API_BASE = `${API_BASE_URL}QR`;
 
 function Recharge() {
   const [recharges, setRecharges] = useState([]);

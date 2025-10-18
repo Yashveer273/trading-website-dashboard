@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, CheckCircle, Loader2, X, AlertTriangle, ListChecks, DollarSign } from 'lucide-react';
 import './PaymentStatus.css'; // Import CSS
+import { API_BASE_URL } from './api';
 
-const API_ADMIN_PENDING = 'http://localhost:5004/QR/api/admin/pending';
-const API_ADMIN_UPDATE = 'http://localhost:5004/QR/api/admin/payments/';
+const API_ADMIN_PENDING = `${API_BASE_URL}QR/api/admin/pending`;
+const API_ADMIN_UPDATE = `${API_BASE_URL}QR/api/admin/payments/`;
 
 async function handleResponse(res) {
   try {

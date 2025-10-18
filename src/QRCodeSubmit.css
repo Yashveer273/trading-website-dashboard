@@ -3,13 +3,14 @@
   padding: 2rem;
   font-family: sans-serif;
   background: #f9fafb;
+  width: 100%;
 }
 
 .uploader h1 {
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 1px solid #ddd;
   padding-bottom: 0.5rem;
 }
 
@@ -27,9 +28,14 @@
   cursor: pointer;
   background: #6366f1;
   color: white;
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
   margin-top: 1rem;
+  transition: background 0.2s;
+}
+
+.upload-label:hover:not(.disabled) {
+  background: #4f46e5;
 }
 
 .upload-label.disabled {
@@ -37,7 +43,8 @@
   cursor: not-allowed;
 }
 
-.preview-list {
+.preview-list,
+.existing-qrs {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -45,16 +52,19 @@
 
 .file-card {
   position: relative;
-  width: 200px;
+  width: 150px;
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.85rem;
 }
 
 .file-preview {
-  height: 120px;
+  height: 100px;
+  width: 100%;
   background: #f3f4f6;
   display: flex;
   justify-content: center;
@@ -67,20 +77,29 @@
 }
 
 .file-info {
-  padding: 0.5rem;
-  font-size: 0.85rem;
+  padding: 0.4rem 0.5rem;
+  text-align: center;
 }
 
-.remove-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #dc2626;
+.remove-btn,
+.qr-actions button {
+  background: #ef4444;
   color: white;
   border: none;
-  border-radius: 50%;
-  padding: 4px;
+  border-radius: 4px;
+  padding: 3px 6px;
   cursor: pointer;
+  font-size: 0.75rem;
+  margin: 2px;
+}
+
+.qr-actions button:nth-child(1) {
+  background: #2563eb; /* Update button */
+}
+
+.remove-btn:hover,
+.qr-actions button:hover {
+  opacity: 0.85;
 }
 
 .actions {
@@ -92,7 +111,7 @@
 }
 
 .message {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   background: #fef3c7;
@@ -102,10 +121,10 @@
 .upload-btn {
   background: #22c55e;
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   font-weight: bold;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
 }
 

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { RefreshCw, Clock } from "lucide-react";
 import "./WithdrawHistory.css";
+import { API_BASE_URL } from "./api";
 
-const API_WITHDRAW_STATEMENT = "http://localhost:5004/api/withdraw/withdraw-statement";
+const API_WITHDRAW_STATEMENT = `${API_BASE_URL}api/withdraw/withdraw-statement`;
 
 const WithdrawStatement = () => {
   const [withdraws, setWithdraws] = useState([]);

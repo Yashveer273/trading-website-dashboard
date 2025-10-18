@@ -1,6 +1,6 @@
 import React from "react";
 import './App.css';
-import Header from "./Header";
+
 import Sidebar from "./Sidebar";
 
 import Users from "./Users"; // Import the Users page
@@ -23,14 +23,16 @@ import QRCodeSubmit from "./QRCodeSubmit";
 import LucySpin from "./lucySpin";
 import ProductPurchaseList from "./ProductPurchaseList";
 
+
 function App() {
   return (
     <div className="grid-container">
-      <Header />
+      {/* <Header /> */}
       <Sidebar />
       <Routes>
         <Route path="/" element={<ProductPurchaseList />} />
         <Route path="/users" element={<Users />} />
+       
        
         <Route path="/recharge" element={<Recharge />} />   {/* fixed typo */}
         <Route path="/withdraw" element={<Withdrawal />} />

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './LucySpin.css';
+import { API_BASE_URL2,API_BASE_URL } from './api';
 
-const API_BASE_URL = 'http://localhost:5004/api/luckySpin';
+const luckySpinURL = `${API_BASE_URL}api/luckySpin`;
 const MAX_ITEMS = 8;
 
 const LucySpin = () => {
@@ -17,7 +18,7 @@ const LucySpin = () => {
   const fetchItems = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/items`);
+      const res = await fetch(`${luckySpinURL}/items`);
       const data = await res.json();
       setItems(data);
     } catch (err) { setError(err.message || 'Failed to fetch'); }
@@ -49,7 +50,7 @@ const LucySpin = () => {
     setLoading(true); setError(''); setMessage('');
     try {
       const payload = createFormDataPayload(formData);
-      const url = isEditing ? `${API_BASE_URL}/item/${formData._id}` : `${API_BASE_URL}/item-save`;
+      const url = isEditing ? `${luckySpinURL}/item/${formData._id}` : `${luckySpinURL}/item-save`;
       const method = isEditing ? 'PUT' : 'POST';
       const res = await fetch(url, { method, body: payload });
       const result = await res.json();
@@ -65,7 +66,7 @@ const LucySpin = () => {
   const handleEdit = item => { setFormData({...item, image:null}); setIsEditing(true); document.getElementById('item-form')?.scrollIntoView({behavior:'smooth'}); };
   const handleCancel = () => { setFormData({ itemName:'', priority:1, reward:'', image:null, imageUrl:'' }); setIsEditing(false); };
   const handleDelete = async id => { if(!window.confirm('Delete this item?')) return; setLoading(true); setError(''); setMessage('');
-    try { const res = await fetch(`${API_BASE_URL}/item/${id}`, { method:'DELETE' }); const result = await res.json(); if(!res.ok) throw new Error(result.error || 'Failed'); setMessage('Deleted successfully'); await fetchItems(); } 
+    try { const res = await fetch(`${luckySpinURL}/item/${id}`, { method:'DELETE' }); const result = await res.json(); if(!res.ok) throw new Error(result.error || 'Failed'); setMessage('Deleted successfully'); await fetchItems(); } 
     catch(err){ setError(err.message); } finally { setLoading(false); clearMessages(); }
   };
 
@@ -115,7 +116,7 @@ const LucySpin = () => {
           {items.length === 0 ? <p>No items yet.</p> :
             items.map(item => (
               <div key={item._id} className="lucy-item-card">
-                <img src={getItemImageUrl(`http://localhost:5004${item.imageUrl}`)} alt={item.itemName} className="lucy-item-img"/>
+                <img src={getItemImageUrl(`${API_BASE_URL2}${item.imageUrl}`)} alt={item.itemName} className="lucy-item-img"/>
                 <div className="lucy-item-details">
                   <p className="lucy-item-name">{item.itemName}</p>
                   <p className="lucy-item-reward">Reward: {item.reward}</p>

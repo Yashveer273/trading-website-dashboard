@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./ProductPurchaseList.css"; // make sure this file exists
+import { API_BASE_URL } from "./api";
 
-const API_BASE = "http://localhost:5004/QR";
+const API_BASE = `${API_BASE_URL}QR`;
 
 const ProductPurchaseList = () => {
   const [stats, setStats] = useState(null);

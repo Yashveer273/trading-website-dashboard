@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./ManageCategories.css";
 import { getProducts, createProduct, deleteProduct, updateProduct } from "./api";
-
+import { API_BASE_URL2,API_BASE_URL } from './api';
+import { FaTimes } from 'react-icons/fa'; // 1. Import the desired icon
 function ManageProducts() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(["Primary", "New", "Sessions", "Vip"]);
@@ -25,12 +26,15 @@ function ManageProducts() {
     image: null,
     badge: "non",
     purchaseType: "One time buy",
+      productExplanation: [""],
   });
 
   const badgeOptions = ["non", "popular", "new", "limited"];
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(5);
-
+  const [selectedExplanation, setSelectedExplanation] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
+    const handleClose = () => setShowPopup(false);
   // ---------------- API HANDLERS ----------------
   const fetchProducts = async () => {
     try {
@@ -44,7 +48,10 @@ function ManageProducts() {
       setLoading(false);
     }
   };
-
+  const handleView = (explanation) => {
+    setSelectedExplanation(explanation || []);
+    setShowPopup(true);
+  };
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
@@ -57,7 +64,24 @@ function ManageProducts() {
       }
     }
   };
+  // ✅ Explanation handlers
+  const handleExplanationChange = (index, value) => {
+    const updated = [...productForm.productExplanation];
+    updated[index] = value;
+    setProductForm({ ...productForm, productExplanation: updated });
+  };
 
+  const addNewExplanationLine = () => {
+    setProductForm({
+      ...productForm,
+      productExplanation: [...productForm.productExplanation, ""]
+    });
+  };
+
+  const removeExplanationLine = (index) => {
+    const updated = productForm.productExplanation.filter((_, i) => i !== index);
+    setProductForm({ ...productForm, productExplanation: updated });
+  };
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -83,13 +107,16 @@ function ManageProducts() {
   };
 
   const handleAddProduct = async () => {
-    const { name, price, cycleType, cycleValue, daily, hour, image, badge, purchaseType } = productForm;
+    const { name, price, cycleType, cycleValue, daily, hour, image, badge, purchaseType,productExplanation  } = productForm;
 console.log(productForm);
     if (!name || !price || !cycleValue || (cycleType === "day" && !daily) || (cycleType === "hour" && !hour)) {
       showMessage("Please fill all required fields!", "error");
       return;
     }
-
+  if (!Array.isArray(productExplanation)) {
+      showMessage("Product explanation must be an array", "error");
+      return;
+    }
     const formData = new FormData();
     formData.append("categoryName", selectedCategory ?? "");
     formData.append("productName", name ?? "");
@@ -100,6 +127,7 @@ console.log(productForm);
     formData.append("hour", hour || 0);
     formData.append("badge", badge ?? "");
     formData.append("purchaseType", purchaseType ?? "One time buy");
+        formData.append("productExplanation", JSON.stringify(productExplanation));
     if (image instanceof File) formData.append("image", image);
 
     try {
@@ -127,6 +155,7 @@ console.log(productForm);
         image: null,
         badge: "non",
         purchaseType: "One time buy",
+             productExplanation: [""]
       });
     } catch (err) {
       console.log(err);
@@ -149,6 +178,8 @@ console.log(productForm);
       image: null,
       badge: product.badge,
       purchaseType: product.purchaseType ?? "One time buy",
+         productExplanation: product.productExplanation?.length ? product.productExplanation : [""]
+  
     });
   };
 
@@ -263,18 +294,37 @@ console.log(productForm);
           </select>
         </div>
 
+<div>
+  <label >Product Explanations</label>
+  {productForm.productExplanation.map((line, index) => (
+    <div className="product-explanation-line" key={index}>
+      <input
+        type="text"
+        value={line}
+        onChange={(e) => handleExplanationChange(index, e.target.value)}
+        placeholder={`Explanation ${index + 1}`}
+      />
+      <button type="button" onClick={() => removeExplanationLine(index)}><FaTimes /></button>
+    </div>
+  ))}
+  <button type="button" id="newlinebtn" onClick={addNewExplanationLine}>
+      New Line
+  </button>
+</div>
         <div style={{ gridColumn: "1 / -1" }}>
           <button onClick={handleAddProduct}>{editingProductId ? "Update Product" : "Add Product"}</button>
         </div>
+
       </div>
 
       <h3>Product List</h3>
-      <div>
+      <div style={{paddingLeft:"3px"}}>
         <input type="text" placeholder="Search by name or category" value={searchTerm} onChange={handleSearch} />
       </div>
 
       {loading ? <p>Loading...</p> : (
         <>
+        <div className="product-table-wrapper">
           <table className="product-table">
             <thead>
               <tr>
@@ -289,7 +339,7 @@ console.log(productForm);
                 const totalHour = Number(item.hourIncome || item.hour) * Number(item.cycleValue);
                 return (
                   <tr key={item._id}>
-                    <td>{item.imageUrl && <img src={`http://localhost:5004${item.imageUrl}`} alt={item.productName || item.name} width="50" />}</td>
+                    <td>{item.imageUrl && <img src={`${API_BASE_URL2}${item.imageUrl}`} alt={item.productName || item.name} width="50" />}</td>
                     <td>{item.productName || item.name}</td>
                     <td>{item.categoryName || item.category}</td>
                     <td>{item.price}</td>
@@ -304,12 +354,28 @@ console.log(productForm);
                     <td>
                       <button className="edit" onClick={() => handleEdit(item)}>Edit</button>
                       <button className="delete" onClick={() => handleDelete(item._id)}>Delete</button>
+                       <button id="newlinebtn" onClick={() => handleView(item.productExplanation)}>View</button>
+           
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+          </div>
+ {showPopup && (
+  <div className="popup-overlay">
+    <div className="popup-card">
+      <h3>Product Explanation</h3>
+      <ol className="explanation-list">
+        {selectedExplanation.map((line, index) => (
+          <li key={index}>{line}</li>
+        ))}
+      </ol>
+      <button className="close-btn" onClick={handleClose}>Close</button>
+    </div>
+  </div>
+)}
 
           <div className="pagination">
             {Array.from({ length: totalPages }, (_, i) => (

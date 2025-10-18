@@ -3,11 +3,12 @@ import {
   RefreshCw, CheckCircle, Loader2, X, AlertTriangle, ListChecks,  
 } from 'lucide-react';
 import './withdrawRequest.css';
+import { API_BASE_URL } from './api';
 
-const API_WITHDRAW_PENDING = 'http://localhost:5004/api/withdraw/withdraw-pending';
-const API_WITHDRAW_APPROVE = 'http://localhost:5004/api/withdraw/withdraw-approve/';
-const API_WITHDRAW_REJECT = 'http://localhost:5004/api/withdraw/withdraw-reject/';
-const API_BANK_DETAILS = 'http://localhost:5004/api/withdraw/bank-details';
+const API_WITHDRAW_PENDING = `${API_BASE_URL}api/withdraw/withdraw-pending`;
+const API_WITHDRAW_APPROVE = `${API_BASE_URL}api/withdraw/withdraw-approve/`;
+const API_WITHDRAW_REJECT = `${API_BASE_URL}api/withdraw/withdraw-reject/`;
+const API_BANK_DETAILS = `${API_BASE_URL}api/withdraw/bank-details`;
 
 async function handleResponse(res) {
   try {

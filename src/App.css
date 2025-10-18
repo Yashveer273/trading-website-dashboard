@@ -8,8 +8,9 @@ body {
 }
 
 .grid-container {
-  display: grid;
-  grid-template-columns: 260px 1fr;
+  display: flex;
+  width: 100%;
+  grid-template-columns:100% 1fr;;
   grid-template-rows: 60px 1fr;
   grid-template-areas:
     "sidebar header"
@@ -392,7 +393,9 @@ body {
 /* 📱 Large tablets & small laptops (≤ 992px) */
 @media screen and (max-width: 992px) {
   .grid-container {
-    grid-template-columns: 1fr; /* full width for main */
+    display: flex;
+    width: 100%;
+   grid-template-columns:100% 1fr;/* full width for main */
     grid-template-areas:
       "header"
       "main";
@@ -400,7 +403,7 @@ body {
 
   .sidebar {
     position: fixed;
-    left: -260px;
+    left: -15px;
     top: 0;
     height: 100%;
     z-index: 1200;
@@ -424,6 +427,26 @@ body {
 
 /* 📱 Tablets (≤ 768px) */
 @media screen and (max-width: 768px) {
+  .grid-container {
+     display: flex;
+    width: 100%;
+    grid-template-columns:100% 1fr; /* full width for main */
+    grid-template-areas:
+      "header"
+      "main";
+  }
+  .sidebar {
+  grid-area: sidebar;
+    left: -15px;
+  background-color: #1f2937;
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll; /* allow scrolling if items exceed height */
+
+}
   .stat-cards {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
@@ -610,4 +633,28 @@ body {
   .quick-stats {
     grid-template-columns: 1fr;
   }
+}
+
+
+.sidebar.closed {
+  position: absolute;
+  left: -40px;
+  width: 0px;
+  
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  background: #ff1f1f;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #000000;
+  z-index: 3000;
 }

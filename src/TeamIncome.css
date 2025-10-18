@@ -3,6 +3,7 @@
   background-color: #f9fafb;
   min-height: calc(100vh - 60px); /* adjust if header present */
   overflow-y: auto;
+  width: 100%;
 }
 
 .team-income-container h2 {
