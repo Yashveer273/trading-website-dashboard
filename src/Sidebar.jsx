@@ -9,11 +9,13 @@ import {
   BsBag,
   BsBarChart,
   BsCreditCard,
-  
+  BsTelegram,
   BsBoxSeam,
   BsPower,
   BsChevronLeft,
-  BsChevronRight
+  BsChevronRight,
+  BsGift,BsDice5,
+  BsFileEarmarkText
 } from "react-icons/bs";
 
 function Sidebar() {
@@ -47,7 +49,7 @@ function Sidebar() {
               <Link to="/QRCodeSubmit"><BsWallet2 className="icon" /> Add QR Code</Link>
             </li>
             <li className="sidebar-item">
-              <Link to="/LucySpin"><BsWallet2 className="icon" /> Lucky Spin</Link>
+              <Link to="/LucySpin"><BsDice5 className="icon" /> Lucky Spin</Link>
             </li>
             <li className="sidebar-item">
               <Link to="/recharge"><BsCashStack className="icon" /> Deposit History</Link>
@@ -65,15 +67,17 @@ function Sidebar() {
               <Link to="/team-income"><BsBarChart className="icon" /> Team Income</Link>
             </li>
             <li className="sidebar-item">
-              <Link to="/giftcodes"><BsBarChart className="icon" /> Gift Codes</Link>
+              <Link to="/giftcodes"><BsGift className="icon" /> Gift Codes</Link>
             </li>
             <li className="sidebar-item">
-              <Link to="/claim-history"><BsCreditCard className="icon" /> Claim History</Link>
+              <Link to="/claim-history"><BsFileEarmarkText className="icon" /> Claim History</Link>
             </li>
             <li className="sidebar-item">
               <Link to="/payment-status"><BsCreditCard className="icon" /> Deposit Request</Link>
             </li>
-           
+           <li className="sidebar-item">
+              <Link to="/socialMedia"><BsTelegram  className="icon" /> Social Media</Link>
+            </li>
             <li className="sidebar-item">
               <Link to="/logout"><BsPower className="icon" /> Logout</Link>
             </li>

@@ -22,6 +22,7 @@ import Teams from "./Teams";
 import QRCodeSubmit from "./QRCodeSubmit";
 import LucySpin from "./lucySpin";
 import ProductPurchaseList from "./ProductPurchaseList";
+import SocialMedia from "./SocialMedia";
 
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
         <Route path="/QRCodeSubmit" element={<QRCodeSubmit/>}/>
         <Route path="/LucySpin" element={<LucySpin/>}/>
         <Route path="/giftcodes" element={<Giftcodes/>}/>
+        <Route path="/socialMedia" element={<SocialMedia/>}/>
 
          <Route path="/teams/:id" element={<Teams />} />
 

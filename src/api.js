@@ -1,10 +1,10 @@
 import axios from "axios";
 
 // Base URL for the backend API
-// export const API_BASE_URL = "http://localhost:5004/"; 
-// export const API_BASE_URL2 = "http://localhost:5004"; 
-export const API_BASE_URL = "https://bdgwin.com.co/";
-export const API_BASE_URL2 = "https://bdgwin.com.co";
+export const API_BASE_URL = "http://localhost:5004/"; 
+export const API_BASE_URL2 = "http://localhost:5004"; 
+// export const API_BASE_URL = "https://bdgwin.com.co/";
+// export const API_BASE_URL2 = "https://bdgwin.com.co";
 
 // Get all giftcodes (optional limit)
 export const getGiftcodes = async (limit = 0) => {
@@ -285,4 +285,31 @@ export const getWithdraws = async (userId, page = 1, limit = 10) => {
     console.error("Error fetching withdraw history:", err);
     throw err;
   }
+};
+// api.jsx
+
+
+
+// ✅ Get all links
+export const getSocialLinks = async () => {
+  const res = await axios.get(`${API_BASE_URL}api/SocialMedia`);
+  return res.data.data;
+};
+
+// ✅ Create new links
+export const createSocialLinks = async (data) => {
+  const res = await axios.post(`${API_BASE_URL}api/SocialMedia`, data);
+  return res.data;
+};
+
+// ✅ Update existing links
+export const updateSocialLinks = async (id, data) => {
+  const res = await axios.put(`${API_BASE_URL}api/SocialMedia/${id}`, data);
+  return res.data;
+};
+
+// ✅ Delete links
+export const deleteSocialLinks = async (id) => {
+  const res = await axios.delete(`${API_BASE_URL}api/SocialMedia/${id}`);
+  return res.data;
 };
