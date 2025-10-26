@@ -323,3 +323,7 @@ export const deleteUser = async (userId) => {
     throw err;
   }
 };
+export const searchuser = async (id) => {
+    const res = await axios.get(`${API_BASE_URL}api/users/search?query=${id}`);
+  return res;
+};

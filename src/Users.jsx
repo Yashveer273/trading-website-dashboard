@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronsRight, Loader, ShoppingCart, Users, DollarSign, RefreshCw, X, Check, Trash2 } from 'lucide-react';
-import { API_BASE_URL, deleteUser } from './api';
+import { API_BASE_URL, deleteUser, searchuser } from './api';
 
 // --- CONFIGURATION ---
 const PAGE_SIZE = 10;
@@ -160,7 +160,11 @@ const UserTable = ({ onUserSelect }) => {
   const totalPages = data?.totalPages || 1;
   const totalItems = data?.total || 0;
  
+const [searchTerm, setSearchTerm] = useState("");
+const [searchResult, setSearchResult] = useState(null);
+const [isSearching, setIsSearching] = useState(false);
 
+  
 // ⬇️ update `users` every time `data` changes
 useEffect(() => {
   if (data?.users) {
@@ -220,17 +224,63 @@ const handleDelete = async (e, userId, phone) => {
       </td>
     </tr>
   );
+const handleSearch = async () => {
+  if (!searchTerm) {
+    setSearchResult(null); // reset to normal table
+    return;
+  }
+
+  // ✅ First, check if user exists locally
+  const localUser = users.find(
+    (u) => u.phone === searchTerm || u._id === searchTerm
+  );
+
+  if (localUser) {
+    setSearchResult([localUser]); // show only that user
+    return;
+  }
+
+  // ✅ If not found locally, hit API
+  setIsSearching(true);
+  try {
+    const res = await searchuser(searchTerm);
+    console.log(res.data)
+    if (res.data?.user && res.data.user.length > 0) {
+      setSearchResult(res.data.user);
+    } else {
+      setSearchResult([]); // no users found
+    }
+  } catch (err) {
+    console.error("Search failed:", err);
+    setSearchResult([]);
+  } finally {
+    setIsSearching(false);
+  }
+};
 
   if (error) return <div className="error-box">Error loading users: {error}</div>;
 
   return (
     <div className="list-view">
+
       <h1 className="h1-main">
         <Users style={{ width: 32, height: 32, marginRight: 8 }} /> All Users Table
       </h1>
+<div className="search-bar">
+  <input
+    type="text"
+    placeholder="Search by phone or ID"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="input-search"
+  />
+  <button onClick={handleSearch} className="btn-search">
+    Search
+  </button>
+</div>
 
       <TableWithServerPagination
-        data={users}
+        data={searchResult !== null ? searchResult : users}
         children={
           <thead className="t-head-user">
             <tr>
@@ -246,7 +296,7 @@ const handleDelete = async (e, userId, phone) => {
         totalPages={totalPages}
         totalItems={totalItems}
         onPageChange={setCurrentPage}
-        loading={loading}
+        loading={loading || isSearching}
       />
     </div>
   );
