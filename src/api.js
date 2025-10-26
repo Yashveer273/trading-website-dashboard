@@ -313,3 +313,13 @@ export const deleteSocialLinks = async (id) => {
   const res = await axios.delete(`${API_BASE_URL}api/SocialMedia/${id}`);
   return res.data;
 };
+
+export const deleteUser = async (userId) => {
+  try {
+    const res = await axios.delete(`${API_BASE_URL}api/users/${userId}`);
+    return res.data; // returns { success: true, message, deleted: {...} }
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    throw err;
+  }
+};

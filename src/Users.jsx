@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronsRight, Loader, ShoppingCart, Users, DollarSign, RefreshCw, X, Check } from 'lucide-react';
-import { API_BASE_URL } from './api';
+import { ChevronLeft, ChevronsRight, Loader, ShoppingCart, Users, DollarSign, RefreshCw, X, Check, Trash2 } from 'lucide-react';
+import { API_BASE_URL, deleteUser } from './api';
 
 // --- CONFIGURATION ---
 const PAGE_SIZE = 10;
@@ -154,10 +154,40 @@ const UserTable = ({ onUserSelect }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const userListUrl = `${API_BASE_URL}api/users/all?page=${currentPage}&limit=${PAGE_SIZE}`;
   const { data, loading, error } = useFetch(userListUrl, [currentPage]);
+  const [users, setusers] = useState( []);
 
-  const users = data?.users || [];
+
   const totalPages = data?.totalPages || 1;
   const totalItems = data?.total || 0;
+ 
+
+// ⬇️ update `users` every time `data` changes
+useEffect(() => {
+  if (data?.users) {
+    setusers(data.users);
+ 
+
+  }
+}, [data]);
+const handleDelete = async (e, userId, phone) => {
+  e.stopPropagation(); // prevent triggering row click
+  if (!window.confirm(`Are you sure you want to delete user ${phone}?`)) return;
+
+  try {
+    const response = await deleteUser(userId);
+      // ✅ Check if status is 200 or success flag is true
+    if (response?.success || response?.status === 200) {
+      alert(response.message || "User deleted successfully");
+      setusers((prevUsers) => prevUsers.filter((u) => u._id !== userId));
+    } else {
+      alert(response?.message || "Delete failed on server");
+    }
+  console.log(users)
+  } catch (err) {
+    console.error("Delete failed:", err);
+    alert("Failed to delete user. Check console for details.");
+  }
+};
 
   const renderUserRow = (user, index) => (
     <tr
@@ -171,7 +201,16 @@ const UserTable = ({ onUserSelect }) => {
       <td className="td t-green font-medium">₹{user.balance}</td>
       <td className="td">₹{user.totalBuy}</td>
       <td className="td">{user.referralCode}</td>
+      <td className="td"> <button
+          className="btn-delete"
+          aria-label={`Delete ${user.phone}`}
+         onClick={(e) => handleDelete(e, user._id, user.phone)}
+        >
+          <Trash2 style={{ width: 16, height: 16, color: "red" }} />
+        </button></td>
+      
       <td className="td">
+
         <button
           className="btn-view"
           aria-label={`View details for ${user.phone}`}

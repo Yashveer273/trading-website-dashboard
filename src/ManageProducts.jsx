@@ -29,12 +29,20 @@ function ManageProducts() {
       productExplanation: [""],
   });
 
-  const badgeOptions = ["non", "popular", "new", "limited"];
+  const badgeOptions = [ "popular", "new", "limited"];
+  const getBadgeLabel = (b) => {
+  if (b === "popular" || b === "non") return "Basic";
+  if (b === "new") return "Normal";
+  if (b === "limited") return "VIP Popular";
+
+};
+
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(5);
   const [selectedExplanation, setSelectedExplanation] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
     const handleClose = () => setShowPopup(false);
+    
   // ---------------- API HANDLERS ----------------
   const fetchProducts = async () => {
     try {
@@ -282,7 +290,7 @@ console.log(productForm);
         <div>
           <label>Badge</label>
           <select name="badge" value={productForm.badge} onChange={handleInputChange}>
-            {badgeOptions.map((b, idx) => <option key={idx} value={b}>{b}</option>)}
+            {badgeOptions.map((b, idx) => <option key={idx} value={b}>{getBadgeLabel(b)}</option>)}
           </select>
         </div>
 
