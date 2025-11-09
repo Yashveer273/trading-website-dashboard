@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  BsPercent  ,
   BsGrid1X2Fill,
   BsPeopleFill,
   BsWallet2,
@@ -44,6 +45,14 @@ function Sidebar() {
             </li>
             <li className="sidebar-item">
               <Link to="/users"><BsPeopleFill className="icon" /> All Users</Link>
+            </li> <li className="sidebar-item">
+              <Link to="/CreateDemousers"><BsPeopleFill className="icon" />Create Demo Users</Link>
+            </li>
+            <li className="sidebar-item">
+              <Link to="/demousers"><BsPeopleFill className="icon" />Demo Users</Link>
+            </li>
+             <li className="sidebar-item">
+              <Link to="/commissionSettings"><BsPercent className="icon" />commission Settings</Link>
             </li>
             <li className="sidebar-item">
               <Link to="/QRCodeSubmit"><BsWallet2 className="icon" /> Add QR Code</Link>

@@ -1,11 +1,41 @@
 import axios from "axios";
 
 // Base URL for the backend API
-// export const API_BASE_URL = "http://localhost:5004/"; 
-// export const API_BASE_URL2 = "http://localhost:5004"; 
-export const API_BASE_URL = "https://bdgwin.com.co/";
-export const API_BASE_URL2 = "https://bdgwin.com.co";
+export const API_BASE_URL = "http://localhost:5004/"; 
+export const API_BASE_URL2 = "http://localhost:5004"; 
+// export const API_BASE_URL = "https://bdgwin.com.co/";
+// export const API_BASE_URL2 = "https://bdgwin.com.co";
+export const registerUser = async (userData) => {
+  
+    const res = await axios.post(`${API_BASE_URL}api/users/register`, userData);
+    return res;
+ 
+};
 
+export const P_exp = async (userId, productId,exp) => {
+  try {
+    const res = await axios.post(`${API_BASE_URL}api/claimROI/P_exp`, {  userId, productId,exp });
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching team:", err);
+    return { success: false, message: err.response.data.message };
+  }
+};
+
+export const addRechargeApi = async (utr, amount, userId) => {
+  return await axios.post(`${API_BASE_URL}QR/api/Admin/recharge`, {
+    utr,
+    amount,
+    userId,
+  });
+};
+
+export const minusAmountApi = async (amount, userId) => {
+  return await axios.post(`${API_BASE_URL}QR/api/Admin/recharge/minus`, {
+    amount,
+    userId,
+  });
+};
 // Get all giftcodes (optional limit)
 export const getGiftcodes = async (limit = 0) => {
   try {
@@ -326,4 +356,14 @@ export const deleteUser = async (userId) => {
 export const searchuser = async (id) => {
     const res = await axios.get(`${API_BASE_URL}api/users/search?query=${id}`);
   return res;
+};
+export const getCommission = async () => {
+  const res = await axios.get(`${API_BASE_URL}api/commission`);
+  return res.data;
+};
+
+// ✅ Update commission percentages
+export const updateCommission = async (data) => {
+  const res = await axios.put(`${API_BASE_URL}api/commission/update`, data);
+  return res.data;
 };

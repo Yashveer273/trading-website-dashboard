@@ -88,6 +88,11 @@ const ProductPurchaseList = () => {
             <p>Amount: ₹{stats.rechargeStats.totalRechargePendingAmount}</p>
             <p>Cases: {stats.rechargeStats.totalRechargePendingCases}</p>
           </div>
+          <div className="card">
+            <h3>Reject Recharge</h3>
+            <p>Amount: ₹{stats.rechargeStats.totalRechargeRejectedAmount}</p>
+            <p>Cases: {stats.rechargeStats.totalRechargeRejectedCases}</p>
+          </div>
         </div>
       )}
 

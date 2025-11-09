@@ -23,6 +23,8 @@ import QRCodeSubmit from "./QRCodeSubmit";
 import LucySpin from "./lucySpin";
 import ProductPurchaseList from "./ProductPurchaseList";
 import SocialMedia from "./SocialMedia";
+import DemoAccounts from "./DemoAccounts";
+import CommissionSettings from "./CommissionSettings";
 
 
 function App() {
@@ -32,7 +34,10 @@ function App() {
       <Sidebar />
       <Routes>
         <Route path="/" element={<ProductPurchaseList />} />
-        <Route path="/users" element={<Users />} />
+        <Route path="/users" element={<Users isDemoUser={false}/>} />
+        <Route path="/CreateDemousers" element={<DemoAccounts />} />
+        <Route path="/demousers" element={<Users isDemoUser={true}/>} />
+        <Route path="/commissionSettings" element={<CommissionSettings/>} />
        
        
         <Route path="/recharge" element={<Recharge />} />   {/* fixed typo */}

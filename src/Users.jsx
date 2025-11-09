@@ -1,33 +1,50 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronsRight, Loader, ShoppingCart, Users, DollarSign, RefreshCw, X, Check, Trash2 } from 'lucide-react';
-import { API_BASE_URL, deleteUser, searchuser } from './api';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  ChevronLeft,
+  ChevronsRight,
+  Loader,
+  ShoppingCart,
+  Users,
+  DollarSign,
+  RefreshCw,
+  X,
+  Check,
+  Trash2,
+} from "lucide-react";
+import {
+  addRechargeApi,
+  API_BASE_URL,
+  deleteUser,
+  minusAmountApi,
+  P_exp,
+  searchuser,
+} from "./api";
+import AddMyRecharge from "./AddMyRecharge";
 
 // --- CONFIGURATION ---
 const PAGE_SIZE = 10;
 
 // --- HELPER FUNCTIONS ---
 const formatDate = (dateObj) => {
-  if (!dateObj) return 'N/A';
+  if (!dateObj) return "N/A";
 
   // If MongoDB object with $date
-  const isoString = typeof dateObj === 'object' && dateObj.$date
-    ? dateObj.$date
-    : dateObj;
+  const isoString =
+    typeof dateObj === "object" && dateObj.$date ? dateObj.$date : dateObj;
 
   const date = new Date(isoString);
-  if (isNaN(date)) return 'N/A';
+  if (isNaN(date)) return "N/A";
 
-  return date.toLocaleString('en-IN', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return date.toLocaleString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
-
-const formatOid = (idObj) => (idObj ? (idObj['$oid'] || idObj) : 'N/A');
+const formatOid = (idObj) => (idObj ? idObj["$oid"] || idObj : "N/A");
 
 // --- CUSTOM HOOK FOR API FETCHING ---
 const useFetch = (url, dependencies = []) => {
@@ -69,9 +86,9 @@ const useFetch = (url, dependencies = []) => {
   return { data, loading, error, refetch: fetchData };
 };
 
-
 // --- REUSABLE COMPONENT FOR SERVER-SIDE PAGINATION TABLE ---
 const TableWithServerPagination = ({
+  isDemoUser,
   data,
   children,
   renderRow,
@@ -80,7 +97,7 @@ const TableWithServerPagination = ({
   totalPages,
   totalItems,
   onPageChange,
-  loading
+  loading,
 }) => {
   const startIndex = (currentPage - 1) * PAGE_SIZE;
   const totalDisplay = data ? data.length : 0;
@@ -94,7 +111,15 @@ const TableWithServerPagination = ({
   const PaginationControls = () => (
     <div className="p-controls">
       <span className="p-info">
-        Showing <span style={{ fontWeight: 600 }}>{totalDisplay > 0 ? startIndex + 1 : 0}</span> to <span style={{ fontWeight: 600 }}>{Math.min(startIndex + totalDisplay, totalItems)}</span> of <span style={{ fontWeight: 600 }}>{totalItems}</span> entries
+        Showing{" "}
+        <span style={{ fontWeight: 600 }}>
+          {totalDisplay > 0 ? startIndex + 1 : 0}
+        </span>{" "}
+        to{" "}
+        <span style={{ fontWeight: 600 }}>
+          {Math.min(startIndex + totalDisplay, totalItems)}
+        </span>{" "}
+        of <span style={{ fontWeight: 600 }}>{totalItems}</span> entries
       </span>
       <div className="p-btns">
         <button
@@ -126,12 +151,24 @@ const TableWithServerPagination = ({
           <p>Loading...</p>
         </div>
       ) : (
-        <div style={{ overflowX: 'auto', flexGrow: 1 }}>
+        <div style={{ overflowX: "auto", flexGrow: 1 }}>
           <table className="table-base">
             {children}
             <tbody>
               {data && data.length > 0 ? (
-                data.map((item, index) => renderRow(item, startIndex + index))
+                data.map((item, index) => {
+                  if (isDemoUser) {
+                    if (item?.phone == null || item?.phone?.startsWith("50")) {
+                      return renderRow(item, startIndex + index);
+                    }
+                    return;
+                  } else {
+                    if (!item?.phone?.startsWith("50")) {
+                      return renderRow(item, startIndex + index);
+                    }
+                    return;
+                  }
+                })
               ) : (
                 <tr>
                   <td colSpan={100} className="td text-center py-8">
@@ -148,50 +185,46 @@ const TableWithServerPagination = ({
   );
 };
 
-
 // --- USER LIST VIEW ---
-const UserTable = ({ onUserSelect }) => {
+const UserTable = ({ onUserSelect, isDemoUser }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const userListUrl = `${API_BASE_URL}api/users/all?page=${currentPage}&limit=${PAGE_SIZE}`;
   const { data, loading, error } = useFetch(userListUrl, [currentPage]);
-  const [users, setusers] = useState( []);
-
+  const [users, setusers] = useState([]);
 
   const totalPages = data?.totalPages || 1;
   const totalItems = data?.total || 0;
- 
-const [searchTerm, setSearchTerm] = useState("");
-const [searchResult, setSearchResult] = useState(null);
-const [isSearching, setIsSearching] = useState(false);
 
-  
-// ⬇️ update `users` every time `data` changes
-useEffect(() => {
-  if (data?.users) {
-    setusers(data.users);
- 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
 
-  }
-}, [data]);
-const handleDelete = async (e, userId, phone) => {
-  e.stopPropagation(); // prevent triggering row click
-  if (!window.confirm(`Are you sure you want to delete user ${phone}?`)) return;
-
-  try {
-    const response = await deleteUser(userId);
-      // ✅ Check if status is 200 or success flag is true
-    if (response?.success || response?.status === 200) {
-      alert(response.message || "User deleted successfully");
-      setusers((prevUsers) => prevUsers.filter((u) => u._id !== userId));
-    } else {
-      alert(response?.message || "Delete failed on server");
+  // ⬇️ update `users` every time `data` changes
+  useEffect(() => {
+    if (data?.users) {
+      setusers(data.users);
     }
-  console.log(users)
-  } catch (err) {
-    console.error("Delete failed:", err);
-    alert("Failed to delete user. Check console for details.");
-  }
-};
+  }, [data]);
+  const handleDelete = async (e, userId, phone) => {
+    e.stopPropagation(); // prevent triggering row click
+    if (!window.confirm(`Are you sure you want to delete user ${phone}?`))
+      return;
+
+    try {
+      const response = await deleteUser(userId);
+      // ✅ Check if status is 200 or success flag is true
+      if (response?.success || response?.status === 200) {
+        alert(response.message || "User deleted successfully");
+        setusers((prevUsers) => prevUsers.filter((u) => u._id !== userId));
+      } else {
+        alert(response?.message || "Delete failed on server");
+      }
+      console.log(users);
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete user. Check console for details.");
+    }
+  };
 
   const renderUserRow = (user, index) => (
     <tr
@@ -205,16 +238,18 @@ const handleDelete = async (e, userId, phone) => {
       <td className="td t-green font-medium">₹{user.balance}</td>
       <td className="td">₹{user.totalBuy}</td>
       <td className="td">{user.referralCode}</td>
-      <td className="td"> <button
+      <td className="td">
+        {" "}
+        <button
           className="btn-delete"
           aria-label={`Delete ${user.phone}`}
-         onClick={(e) => handleDelete(e, user._id, user.phone)}
+          onClick={(e) => handleDelete(e, user._id, user.phone)}
         >
           <Trash2 style={{ width: 16, height: 16, color: "red" }} />
-        </button></td>
-      
-      <td className="td">
+        </button>
+      </td>
 
+      <td className="td">
         <button
           className="btn-view"
           aria-label={`View details for ${user.phone}`}
@@ -224,68 +259,81 @@ const handleDelete = async (e, userId, phone) => {
       </td>
     </tr>
   );
-const handleSearch = async () => {
-  if (!searchTerm) {
-    setSearchResult(null); // reset to normal table
-    return;
-  }
-
-  // ✅ First, check if user exists locally
-  const localUser = users.find(
-    (u) => u.phone === searchTerm || u._id === searchTerm
-  );
-
-  if (localUser) {
-    setSearchResult([localUser]); // show only that user
-    return;
-  }
-
-  // ✅ If not found locally, hit API
-  setIsSearching(true);
-  try {
-    const res = await searchuser(searchTerm);
-    console.log(res.data)
-    if (res.data?.user && res.data.user.length > 0) {
-      setSearchResult(res.data.user);
-    } else {
-      setSearchResult([]); // no users found
+  const handleSearch = async () => {
+    if (!searchTerm) {
+      setSearchResult(null); // reset to normal table
+      return;
     }
-  } catch (err) {
-    console.error("Search failed:", err);
-    setSearchResult([]);
-  } finally {
-    setIsSearching(false);
-  }
-};
 
-  if (error) return <div className="error-box">Error loading users: {error}</div>;
+    // ✅ First, check if user exists locally
+    const localUser = users.find(
+      (u) => u.phone === searchTerm || u._id === searchTerm
+    );
+
+    if (localUser) {
+      setSearchResult([localUser]); // show only that user
+      return;
+    }
+
+    // ✅ If not found locally, hit API
+    setIsSearching(true);
+    try {
+      const res = await searchuser(searchTerm);
+      console.log(res.data);
+      if (res.data?.user && res.data.user.length > 0) {
+        setSearchResult(res.data.user);
+      } else {
+        setSearchResult([]); // no users found
+      }
+    } catch (err) {
+      console.error("Search failed:", err);
+      setSearchResult([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  if (error)
+    return <div className="error-box">Error loading users: {error}</div>;
 
   return (
     <div className="list-view">
-
       <h1 className="h1-main">
-        <Users style={{ width: 32, height: 32, marginRight: 8 }} /> All Users Table
+        <Users style={{ width: 32, height: 32, marginRight: 8 }} /> All Users
+        Table
       </h1>
-<div className="search-bar">
-  <input
-    type="text"
-    placeholder="Search by phone or ID"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="input-search"
-  />
-  <button onClick={handleSearch} className="btn-search">
-    Search
-  </button>
-</div>
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search by phone or ID"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input-search"
+        />
+        <button onClick={handleSearch} className="btn-search">
+          Search
+        </button>
+      </div>
 
       <TableWithServerPagination
+        isDemoUser={isDemoUser}
         data={searchResult !== null ? searchResult : users}
         children={
           <thead className="t-head-user">
             <tr>
-              {['S. No.', 'Phone', 'User OID', 'Balance', 'Total Buy', 'Ref Code', 'View Details'].map((h, i) => (
-                <th key={i} scope="col" className="th">{h}</th>
+              {[
+                "S. No.",
+                "Phone",
+                "User OID",
+                "Balance",
+                "Total Buy",
+                "Ref Code",
+                "Delete",
+                "View Details",
+              ].map((h, i) => (
+                <th key={i} scope="col" className="th">
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
@@ -302,9 +350,8 @@ const handleSearch = async () => {
   );
 };
 
-
 // --- TEAM DETAILS TABLE WITH SERVER PAGINATION ---
-const TeamDetailsTable = ({ userId, teamNumber }) => {
+const TeamDetailsTable = ({ userId, teamNumber, isDemoUser }) => {
   const teamType = `team${teamNumber}`;
   const [currentPage, setCurrentPage] = useState(1);
   const teamUrl = `${API_BASE_URL}api/users/${userId}/team?type=${teamType}&page=${currentPage}&limit=${PAGE_SIZE}`;
@@ -315,50 +362,65 @@ const TeamDetailsTable = ({ userId, teamNumber }) => {
   const totalItems = data?.totalItems || 0;
 
   // We need to flatten the 'ids' array from the groups for the table display
-  const allMembers = teamGroups.flatMap((group, groupIdx) => group.ids.map(member => ({
-    ...member,
-    groupIndex: groupIdx + 1 + ((currentPage - 1) * PAGE_SIZE), // This group index is per-page, not global. For simplicity, we just use local index.
-  })));
+  const allMembers = teamGroups.flatMap((group, groupIdx) =>
+    group.ids.map((member) => ({
+      ...member,
+      groupIndex: groupIdx + 1 + (currentPage - 1) * PAGE_SIZE, // This group index is per-page, not global. For simplicity, we just use local index.
+    }))
+  );
 
   // Calculate total recharge and commission for the *currently displayed* groups
-  const totalRecharge = teamGroups.reduce((acc, group) => acc + (group.totalRecharge || 0), 0);
-  const totalCommission = teamGroups.reduce((acc, group) => acc + (group.totalCommission || 0), 0);
-  
+  const totalRecharge = teamGroups.reduce(
+    (acc, group) => acc + (group.totalRecharge || 0),
+    0
+  );
+  const totalCommission = teamGroups.reduce(
+    (acc, group) => acc + (group.totalCommission || 0),
+    0
+  );
+
   const renderMemberRow = (member, index) => (
     <tr key={formatOid(member._id)} className="tr-hover-gray">
       <td className="td">{index + 1}</td>
       <td className="td t-indigo font-medium">{member.phone}</td>
-      <td className="td text-xs">{member.person || 'N/A'}</td>
-      
+      <td className="td text-xs">{member.person || "N/A"}</td>
     </tr>
   );
-  
-  if (error) return <div className="error-box-mini">Error loading L{teamNumber} team: {error}</div>;
+
+  if (error)
+    return (
+      <div className="error-box-mini">
+        Error loading L{teamNumber} team: {error}
+      </div>
+    );
 
   return (
     <div className="team-box">
-      <h3 className="h3-title" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+      <h3 className="h3-title" style={{ fontSize: "1.25rem", fontWeight: 700 }}>
         Level {teamNumber} Team Members (L{teamNumber})
       </h3>
 
       <div className="team-sum-grid">
         <div className="d-item">
-            <p className="d-item-label">{`Displayed L${teamNumber} Group Recharge`}</p>
-            <p className="d-item-value">₹{totalRecharge}</p>
+          <p className="d-item-label">{`Displayed L${teamNumber} Group Recharge`}</p>
+          <p className="d-item-value">₹{totalRecharge}</p>
         </div>
         <div className="d-item">
-            <p className="d-item-label">{`Displayed L${teamNumber} Group Commission`}</p>
-            <p className="d-item-value">₹{totalCommission}</p>
+          <p className="d-item-label">{`Displayed L${teamNumber} Group Commission`}</p>
+          <p className="d-item-value">₹{totalCommission}</p>
         </div>
       </div>
 
       <TableWithServerPagination
+        isDemoUser={isDemoUser}
         data={allMembers}
         children={
           <thead className="t-head-team">
             <tr>
-              {['S. No.', 'Phone Number', 'Person ID'].map((h, i) => (
-                <th key={i} scope="col" className="th">{h}</th>
+              {["S. No.", "Phone Number", "Person ID"].map((h, i) => (
+                <th key={i} scope="col" className="th">
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
@@ -371,32 +433,57 @@ const TeamDetailsTable = ({ userId, teamNumber }) => {
         onPageChange={setCurrentPage}
         loading={loading}
       />
-      {totalItems > 0 && <p style={{ fontSize: '0.875rem', textAlign: 'right', color: '#6b7280', marginTop: 8 }}>Total L{teamNumber} Groups: {totalItems}</p>}
+      {totalItems > 0 && (
+        <p
+          style={{
+            fontSize: "0.875rem",
+            textAlign: "right",
+            color: "#6b7280",
+            marginTop: 8,
+          }}
+        >
+          Total L{teamNumber} Groups: {totalItems}
+        </p>
+      )}
     </div>
   );
 };
+const planExp = async (item, user) => {
+  const res = await P_exp(user._id, item, true);
 
+  console.log(res);
+
+  alert(res.message);
+};
 // --- GENERIC HISTORY TABLE ---
-const HistoryTable = ({ userId, title, headers, endpoint, historyKey,renderRow }) => {
+const HistoryTable = ({
+  isDemoUser,
+  userId,
+  title,
+  headers,
+  endpoint,
+  historyKey,
+  renderRow,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const historyUrl = `${API_BASE_URL}api/users/${userId}/${endpoint}?page=${currentPage}&limit=${PAGE_SIZE}`;
   const { data, loading, error } = useFetch(historyUrl, [currentPage]);
-console.log(data)
-  const historyData = data ? (data[historyKey] || []) : [];
+  console.log(data);
+  const historyData = data ? data[historyKey] || [] : [];
   const totalPages = data?.totalPages || 1;
   const totalItems = data?.totalItems || 0;
 
   const renderHistoryRow = (item, index) => {
     // Use custom renderer if provided (e.g., for Purchases)
     if (renderRow) {
-        return renderRow(item, index);
+      return renderRow(item, index);
     }
-      
+
     // Default renderer for Recharge/Withdraw History
-    const isPending = item.approved === 'Pending' || item.status === 'Pending';
+    const isPending = item.approved === "Pending" || item.status === "Pending";
     const statusText = item.approved || item.status;
-    const badgeClass = isPending ? 'badge-p' : 'badge-c';
-    
+    const badgeClass = isPending ? "badge-p" : "badge-c";
+
     // Check if it is a recharge history row (includes utr)
     const isRecharge = item.utr !== undefined;
 
@@ -411,19 +498,31 @@ console.log(data)
       </tr>
     );
   };
-    
-  if (error) return <div className="error-box-mini">Error loading {title}: {error}</div>;
+
+  if (error)
+    return (
+      <div className="error-box-mini">
+        Error loading {title}: {error}
+      </div>
+    );
 
   return (
     <div className="history-table-container">
-      <h3 className="history-table-title">{title} ({totalItems})</h3>
-      
+      <h3 className="history-table-title">
+        {title} ({totalItems})
+      </h3>
+
       <TableWithServerPagination
+        isDemoUser={isDemoUser}
         data={historyData}
         children={
           <thead className="t-head-history">
             <tr>
-              {headers.map((h, i) => <th key={i} scope="col" className="th">{h}</th>)}
+              {headers.map((h, i) => (
+                <th key={i} scope="col" className="th">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
         }
@@ -439,7 +538,6 @@ console.log(data)
   );
 };
 
-
 // --- WITHDRAW LIMIT UPDATE COMPONENT ---
 const WithdrawLimitUpdater = ({ userId, currentLimit, onUpdate }) => {
   const [limit, setLimit] = useState(currentLimit);
@@ -447,26 +545,29 @@ const WithdrawLimitUpdater = ({ userId, currentLimit, onUpdate }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus('loading');
-    
+    setStatus("loading");
+
     try {
-      const response = await fetch(`${API_BASE_URL}api/users/${userId}/withdraw-limit`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ limit: parseFloat(limit) }),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}api/users/${userId}/withdraw-limit`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ limit: parseFloat(limit) }),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setStatus('success');
+        setStatus("success");
         onUpdate(data.withdrawLimit);
       } else {
-        throw new Error(data.message || 'Failed to update limit.');
+        throw new Error(data.message || "Failed to update limit.");
       }
     } catch (err) {
       console.error(err);
-      setStatus('error');
+      setStatus("error");
     } finally {
       setTimeout(() => setStatus(null), 3000); // Clear status after 3 seconds
     }
@@ -483,44 +584,87 @@ const WithdrawLimitUpdater = ({ userId, currentLimit, onUpdate }) => {
           onChange={(e) => setLimit(e.target.value)}
           required
           className="input-field"
-          disabled={status === 'loading'}
+          disabled={status === "loading"}
         />
-        <button type="submit" className="btn-update" disabled={status === 'loading'}>
-          {status === 'loading' ? <Loader className="animate-spin" size={16} /> : 'Set New Limit'}
+        <button
+          type="submit"
+          className="btn-update"
+          disabled={status === "loading"}
+        >
+          {status === "loading" ? (
+            <Loader className="animate-spin" size={16} />
+          ) : (
+            "Set New Limit"
+          )}
         </button>
       </div>
-      {status === 'success' && <p className="status-msg success-msg"><Check size={16}/> Limit updated successfully!</p>}
-      {status === 'error' && <p className="status-msg error-msg"><X size={16}/> Failed to update limit.</p>}
+      {status === "success" && (
+        <p className="status-msg success-msg">
+          <Check size={16} /> Limit updated successfully!
+        </p>
+      )}
+      {status === "error" && (
+        <p className="status-msg error-msg">
+          <X size={16} /> Failed to update limit.
+        </p>
+      )}
     </form>
   );
 };
 
-
 // --- USER DETAILS VIEW ---
-const UserDetails = ({ selectedUserFromList, onBack }) => {
+const UserDetails = ({ selectedUserFromList, onBack, isDemoUser,deLoading }) => {
   // Fetch full details of the user
-  const detailUrl = `${API_BASE_URL}api/users/details/${formatOid(selectedUserFromList._id)}`;
-  const { data: detailData, loading: detailLoading, error: detailError, refetch: refetchDetails } = useFetch(detailUrl, []);
+  const detailUrl = `${API_BASE_URL}api/users/details/${formatOid(
+    selectedUserFromList._id
+  )}`;
+  const {
+    data: detailData,
+    loading: detailLoading,
+    error: detailError,
+    refetch: refetchDetails,
+  } = useFetch(detailUrl, []);
 
   const user = detailData?.user || selectedUserFromList; // Use fetched data, fallback to list data
-  
+
   const [withdrawLimit, setWithdrawLimit] = useState(user.withdrawLimit);
 
   useEffect(() => {
     if (user.withdrawLimit !== undefined) {
       setWithdrawLimit(user.withdrawLimit);
     }
-  }, [user.withdrawLimit]);
-  
-  if (detailLoading && !detailData) return <div className="loader-full-page"><Loader className="animate-spin text-indigo-500" size={64} /> <p>Loading User Details...</p></div>;
-  if (detailError) return <div className="error-box">Error loading user details: {detailError}</div>;
+  }, [user.withdrawLimit,user]);
+
+  if (detailLoading && !detailData)
+    return (
+      <div className="loader-full-page">
+        <Loader className="animate-spin text-indigo-500" size={64} />{" "}
+        <p>Loading User Details...</p>
+      </div>
+    );
+  if (detailError)
+    return (
+      <div className="error-box">Error loading user details: {detailError}</div>
+    );
   if (!user) return <div className="error-box">User data missing.</div>;
 
-  const {
-    _id, phone, password, referralCode, referredBy,
-    totalBuy, pendingIncome, productIncome, tasksReward,
-    balance, tradePassword, Withdrawal,
-    team1 = [], team2 = [], team3 = [], luckySpin = {}
+  let {
+    _id,
+    phone,
+    password,
+    referralCode,
+    referredBy,
+    totalBuy,
+    pendingIncome,
+    productIncome,
+    tasksReward,
+    balance,
+    tradePassword,
+    Withdrawal,
+    team1 = [],
+    team2 = [],
+    team3 = [],
+    luckySpin = {},
   } = user;
 
   const DetailItem = ({ label, value }) => (
@@ -529,130 +673,244 @@ const UserDetails = ({ selectedUserFromList, onBack }) => {
       <p className="d-item-value">{value}</p>
     </div>
   );
-  
+
   // Total members calculation can be inaccurate as team arrays are $slice'd (limited to 10) in the detail API.
   // A dedicated endpoint for total members would be ideal, but for now we use the slice'd data.
-  const totalIndividualMembers = team1.flatMap(g => g.ids || []).length + team2.flatMap(g => g.ids || []).length + team3.flatMap(g => g.ids || []).length;
-  
+  const totalIndividualMembers =
+    team1.flatMap((g) => g.ids || []).length +
+    team2.flatMap((g) => g.ids || []).length +
+    team3.flatMap((g) => g.ids || []).length;
+
   const renderPurchaseRow = (p, index) => {
-    const isClaimed = p.claim === 'claimed';
-    const rowClass = isClaimed ? 'purchase-claimed' : 'purchase-waiting';
-    const badgeClass = isClaimed ? 'badge-c' : 'badge-p';
+    const isClaimed = p.claim === "claimed";
+    const rowClass = isClaimed ? "purchase-claimed" : "purchase-waiting";
+    const badgeClass = isClaimed ? "badge-c" : "badge-p";
     //  headers={['Total Amount', 'Amount', 'Cycle','Type','Duration', 'Daily Income','ProductId','productName','purchaseType','quantity', 'Claim Status', 'Purchase Date']}
 
     return (
-        <tr key={index} className={rowClass}>
-        
-            <td className="td">₹{p.TotalAmount }</td>
-            <td className="td">₹{p.amount}</td>
-          
-            <td className="td">{p.cycleType}</td>
-              <td className="td">{p.cycleValue} || {p.cycleType}</td>
-            <td className="td">{p.dailyIncome}</td>
-            <td className="td">{p.productId}</td>
-            <td className="td">{p.productName}</td>
-            <td className="td">{p.purchaseType}</td>
-            <td className="td">{p.quantity}</td>
-            <td className="td">
-                <span className={badgeClass}>{p.claim}</span>
-            </td>
-            <td className="td text-xs">{formatDate(p.createdAt)}</td>
-            
-         
-        </tr>
+      <tr key={index} className={rowClass}>
+        <td className="td">₹{p.TotalAmount}</td>
+        <td className="td">₹{p.amount}</td>
+
+        <td className="td">{p.cycleType}</td>
+        <td className="td">
+          {p.cycleValue} || {p.cycleType}
+        </td>
+        <td className="td">{p.dailyIncome}</td>
+        <td className="td">{p.productId}</td>
+        <td className="td">{p.productName}</td>
+        <td className="td">{p.purchaseType}</td>
+        <td className="td">{p.quantity}</td>
+        <td className="td">
+          <span className={badgeClass}>{p.claim}</span>
+        </td>
+        <td className="td text-xs">{formatDate(p.createdAt)}</td>
+        <td className="td text-center">
+          {!p?.exp && isDemoUser && (
+            <button
+              onClick={() => {   deLoading("details","list"); planExp(p.productId, selectedUserFromList)}}
+              className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition"
+            >
+              Exp
+            </button>
+          )}
+        </td>
+      </tr>
     );
   };
-  
+
   return (
     <div className="details-view">
       <button onClick={onBack} className="btn-back btn-base">
-        <ChevronLeft style={{ width: 16, height: 16, marginRight: 8 }} /> Back to All Users
+        <ChevronLeft style={{ width: 16, height: 16, marginRight: 8 }} /> Back
+        to All Users
       </button>
 
       <h1 className="h1-detail">Id | {formatOid(_id)}</h1>
-      <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: 32 }}>User phone: {phone} | Created At: {formatDate(user.createdAt)}</p>
+      <p style={{ fontSize: "0.875rem", color: "#6b7280", marginBottom: 32 }}>
+        User phone: {phone} | Created At: {formatDate(user.createdAt)}
+      </p>
 
       {/* --- FINANCIAL OVERVIEW --- */}
       <div className="card-grid-4">
-        <DetailCard title="Current Balance" value={`₹${balance}`} icon={DollarSign} color="#10b981" 	/>
-        <DetailCard title="Pending Income" value={`₹${pendingIncome}`} icon={Loader} color="#f59e0b" />
-        <DetailCard title="Total Buy" value={`₹${totalBuy}`} icon={ShoppingCart} color="#4f46e5" />
-        <DetailCard title="Withdraw Limit" value={`₹${withdrawLimit}`} icon={DollarSign} color="#ef4444" 	/>
+        <DetailCard
+          title="Current Balance"
+          value={`₹${balance}`}
+          icon={DollarSign}
+          color="#10b981"
+        />
+        <DetailCard
+          title="Pending Income"
+          value={`₹${pendingIncome}`}
+          icon={Loader}
+          color="#f59e0b"
+        />
+        <DetailCard
+          title="Total Buy"
+          value={`₹${totalBuy}`}
+          icon={ShoppingCart}
+          color="#4f46e5"
+        />
+        <DetailCard
+          title="Withdraw Limit"
+          value={`₹${withdrawLimit}`}
+          icon={DollarSign}
+          color="#ef4444"
+        />
       </div>
 
       {/* --- GENERAL INFO --- */}
       <div className="section-box">
         <h2 className="h2-section">
-          <Users style={{ width: 24, height: 24, marginRight: 12, color: '#4f46e5' }} />
+          <Users
+            style={{ width: 24, height: 24, marginRight: 12, color: "#4f46e5" }}
+          />
           General Information
         </h2>
         <div className="info-grid">
-            <DetailItem label="Phone Number" value={phone} />
-            <DetailItem label="Password" value={password || 'N/A'} />
-            <DetailItem label="Trade Password" value={tradePassword || 'N/A'} />
-            <DetailItem label="Referral Code" value={referralCode} />
-            <DetailItem label="Referred By" value={referredBy || 'None'} />
-            <DetailItem label="Product Income" value={`₹${productIncome || 0}`} />
-            <DetailItem label="Tasks Reward" value={`₹${tasksReward || 0}`} />
-            <DetailItem label="Total Withdrawal" value={`₹${Withdrawal || 0}`} />
+          <DetailItem label="Phone Number" value={phone} />
+          <DetailItem label="Password" value={password || "N/A"} />
+          <DetailItem label="Trade Password" value={tradePassword || "N/A"} />
+          <DetailItem label="Referral Code" value={referralCode} />
+          <DetailItem label="Referred By" value={referredBy || "None"} />
+          <DetailItem label="Product Income" value={`₹${productIncome || 0}`} />
+          <DetailItem label="Tasks Reward" value={`₹${tasksReward || 0}`} />
+          <DetailItem label="Total Withdrawal" value={`₹${Withdrawal || 0}`} />
         </div>
-        <div style={{ marginTop: 24, borderTop: '1px solid #eef2ff', paddingTop: 16 }}>
-             <WithdrawLimitUpdater 
-                userId={formatOid(_id)} 
-                currentLimit={withdrawLimit} 
-                onUpdate={(newLimit) => { setWithdrawLimit(newLimit); refetchDetails(); }}
-            />
+
+        <div
+          style={{
+            marginTop: 24,
+            marginBottom: 24,
+            borderTop: "1px solid #eef2ff",
+          }}
+        >
+          <WithdrawLimitUpdater
+            userId={formatOid(_id)}
+            currentLimit={withdrawLimit}
+            onUpdate={(newLimit) => {
+              setWithdrawLimit(newLimit);
+              refetchDetails();
+            }}
+          />
         </div>
+        <AddMyRecharge
+          userId={formatOid(_id)}
+          currentbalance={balance}
+          addrecharge={async (utr, amt, uid) => {
+            try {
+              const res = await addRechargeApi(utr, amt, uid);
+              alert(res.data.message || "Amount added successfully");
+              
+              deLoading("details","list");
+            } catch (err) {
+              alert(err.response?.data?.message || "Failed to add amount");
+            }
+          }}
+          minusAountAction={async (amt, uid) => {
+            try { 
+              const res = await minusAmountApi(amt, uid);
+              alert(res.data.message || "Amount deducted successfully");
+                deLoading("details","list");
+            } catch (err) {
+              alert(err.response?.data?.message || "Failed to deduct amount");
+            }
+          }}
+        />
       </div>
 
       {/* --- TEAM DETAILS (L1, L2, L3) - Paginated API calls --- */}
       <div className="section-box">
         <h2 className="h2-section">
-          <Users style={{ width: 24, height: 24, marginRight: 12, color: '#4f46e5' }} />
-          Team Details (Total *Groups* will be accurate, Individuals shown are per-page)
+          <Users
+            style={{ width: 24, height: 24, marginRight: 12, color: "#4f46e5" }}
+          />
+          Team Details (Total *Groups* will be accurate, Individuals shown are
+          per-page)
         </h2>
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 32 }}>
-            <TeamDetailsTable userId={formatOid(_id)} teamNumber={1} />
-            <TeamDetailsTable userId={formatOid(_id)} teamNumber={2} />
-            <TeamDetailsTable userId={formatOid(_id)} teamNumber={3} />
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 32,
+          }}
+        >
+          <TeamDetailsTable
+            userId={formatOid(_id)}
+            teamNumber={1}
+            isDemoUser={isDemoUser}
+          />
+          <TeamDetailsTable
+            userId={formatOid(_id)}
+            teamNumber={2}
+            isDemoUser={isDemoUser}
+          />
+          <TeamDetailsTable
+            userId={formatOid(_id)}
+            teamNumber={3}
+            isDemoUser={isDemoUser}
+          />
         </div>
       </div>
 
       {/* --- PURCHASE HISTORY - Paginated API call --- */}
       <div className="section-box">
         <h2 className="h2-section">
-          <ShoppingCart style={{ width: 24, height: 24, marginRight: 12, color: '#4f46e5' }} />
+          <ShoppingCart
+            style={{ width: 24, height: 24, marginRight: 12, color: "#4f46e5" }}
+          />
           Purchase History
         </h2>
         <HistoryTable
+          isDemoUser={isDemoUser}
           userId={formatOid(_id)}
           title="Purchase History"
-          headers={['Total Amount', 'Amount','Type','Duration', 'Daily Income','ProductId','productName','purchaseType','quantity', 'Claim Status', 'Purchase Date']}
+          headers={[
+            "Total Amount",
+            "Amount",
+            "Type",
+            "Duration",
+            "Daily Income",
+            "ProductId",
+            "productName",
+            "purchaseType",
+            "quantity",
+            "Claim Status",
+            "Purchase Date",
+            "Exp Plane",
+          ]}
           endpoint="purchases"
           historyKey="purchases"
           renderRow={renderPurchaseRow}
         />
       </div>
 
-
       {/* --- LUCKY SPIN DETAILS --- */}
       <div className="section-box">
         <h2 className="h2-section">
-          <RefreshCw style={{ width: 24, height: 24, marginRight: 12, color: '#4f46e5' }} />
+          <RefreshCw
+            style={{ width: 24, height: 24, marginRight: 12, color: "#4f46e5" }}
+          />
           Lucky Spin Details
         </h2>
         <div className="info-grid">
-            <DetailItem label="Spins Today" value={luckySpin.spinsToday || 0} />
-            <DetailItem label="Spin Limit" value={luckySpin.SpinLimit || 0} />
-            <DetailItem label="Last Spin Date" value={ formatDate(luckySpin.createdAt) } />
-            <DetailItem label="Lucky Spin OID" value={formatOid(luckySpin._id)} />
+          <DetailItem label="Spins Today" value={luckySpin.spinsToday || 0} />
+          <DetailItem label="Spin Limit" value={luckySpin.SpinLimit || 0} />
+          <DetailItem
+            label="Last Spin Date"
+            value={formatDate(luckySpin.createdAt)}
+          />
+          <DetailItem label="Lucky Spin OID" value={formatOid(luckySpin._id)} />
         </div>
       </div>
 
       {/* --- FINANCIAL HISTORY (Recharge & Withdraw) --- */}
       <div className="section-box">
         <h2 className="h2-section">
-          <DollarSign style={{ width: 24, height: 24, marginRight: 12, color: '#4f46e5' }} />
+          <DollarSign
+            style={{ width: 24, height: 24, marginRight: 12, color: "#4f46e5" }}
+          />
           Financial History
         </h2>
         <div className="history-grid-2">
@@ -660,16 +918,18 @@ const UserDetails = ({ selectedUserFromList, onBack }) => {
           {/* Fallback to full detail data if API for recharge is not present (REMOVED) */}
           {/* RECHARGE HISTORY - NOW INTEGRATED */}
           <HistoryTable
+            isDemoUser={isDemoUser}
             userId={formatOid(_id)}
             title="Recharge History"
-            headers={['Amount', 'UTR', 'Status', 'Date']}
+            headers={["Amount", "UTR", "Status", "Date"]}
             endpoint="recharge" // 👈 New API endpoint
             historyKey="rechargeHistory"
           />
           <HistoryTable
+            isDemoUser={isDemoUser}
             userId={formatOid(_id)}
             title="Withdrawal History"
-            headers={['Amount', 'Status', 'Date']}
+            headers={["Amount", "Status", "Date"]}
             endpoint="withdraws"
             historyKey="withdrawHistory"
           />
@@ -679,12 +939,14 @@ const UserDetails = ({ selectedUserFromList, onBack }) => {
   );
 };
 
-
 // --- CARD AND DETAIL ITEM COMPONENTS (Unmodified) ---
-const DetailCard = ({ title, value, icon: Icon, color ,}) => (
+const DetailCard = ({ title, value, icon: Icon, color }) => (
   <div className="d-card">
-    <div className="d-card-icon-wrap" style={{ color: color, backgroundColor: color }}>
-      <Icon style={{ width: 24, height: 24, color:"black" }} />
+    <div
+      className="d-card-icon-wrap"
+      style={{ color: color, backgroundColor: color }}
+    >
+      <Icon style={{ width: 24, height: 24, color: "black" }} />
     </div>
     <div>
       <p className="d-card-title">{title}</p>
@@ -693,21 +955,27 @@ const DetailCard = ({ title, value, icon: Icon, color ,}) => (
   </div>
 );
 
-
 // --- MAIN APP COMPONENT ---
-const AllUsers = () => {
+const AllUsers = ({ isDemoUser }) => {
   const [selectedUser, setSelectedUser] = useState(null);
-  const [view, setView] = useState('list'); // 'list' or 'details'
+  const [view, setView] = useState("list"); // 'list' or 'details'
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
-    setView('details');
+    setView("details");
   };
 
   const handleBack = () => {
     setSelectedUser(null);
-    setView('list');
+    setView("list");
   };
+ const deLoading = (type, type2) => {
+  setView(type2); // show loading / alternate view first
+
+  setTimeout(() => {
+    setView(type); // after delay set original view
+  }, 600); // 1 second delay
+};
 
   return (
     <div className="allUser">
@@ -861,16 +1129,16 @@ const AllUsers = () => {
           .error-msg { background-color: #fee2e2; color: #991b1b; }
         `}
       </style>
-      {view === 'list' && (
-        <UserTable
-          onUserSelect={handleUserSelect}
-        />
+      {view === "list" && (
+        <UserTable onUserSelect={handleUserSelect} isDemoUser={isDemoUser} />
       )}
 
-      {view === 'details' && selectedUser && (
+      {view === "details" && selectedUser && (
         <UserDetails
           selectedUserFromList={selectedUser}
           onBack={handleBack}
+          isDemoUser={isDemoUser}
+          deLoading= {deLoading}
         />
       )}
     </div>
