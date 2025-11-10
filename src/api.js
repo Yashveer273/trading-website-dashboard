@@ -1,10 +1,10 @@
 import axios from "axios";
 
 // Base URL for the backend API
-export const API_BASE_URL = "http://localhost:5004/"; 
-export const API_BASE_URL2 = "http://localhost:5004"; 
-// export const API_BASE_URL = "https://bdgwin.com.co/";
-// export const API_BASE_URL2 = "https://bdgwin.com.co";
+// export const API_BASE_URL = "http://localhost:5004/"; 
+// export const API_BASE_URL2 = "http://localhost:5004"; 
+export const API_BASE_URL = "https://bdgwin.com.co/";
+export const API_BASE_URL2 = "https://bdgwin.com.co";
 export const registerUser = async (userData) => {
   
     const res = await axios.post(`${API_BASE_URL}api/users/register`, userData);
@@ -366,4 +366,77 @@ export const getCommission = async () => {
 export const updateCommission = async (data) => {
   const res = await axios.put(`${API_BASE_URL}api/commission/update`, data);
   return res.data;
+};
+
+
+
+// ✅ Create UPI
+export const createUPI = async (formData) => {
+  try {
+   const {upiId,payeeName}= formData;
+    const res = await fetch(`${API_BASE_URL}api/upi/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ upiId, payeeName })
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Error creating UPI", err);
+    return { success: false, message: "Network error" };
+  }
+};
+
+// ✅ Get All UPIs
+export const getUPIs = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}api/upi/list`);
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching UPI list", err);
+    return { success: false, message: "Network error" };
+  }
+};
+
+// ✅ Get One UPI by ID
+export const getUPIById = async (id) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}api/upi/get/${id}`);
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching UPI details", err);
+    return { success: false, message: "Network error" };
+  }
+};
+
+// ✅ Update UPI
+export const updateUPI = async (id, data) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}api/upi/edit/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        upiId: data.upiId,        // ✅ only string
+        payeeName: data.payeeName // ✅ only string
+      }),
+    });
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error updating UPI", err);
+    return { success: false, message: "Network error" };
+  }
+};
+
+
+// ✅ Delete UPI
+export const deleteUPI = async (id) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}api/upi/delete/${id}`, {
+      method: "DELETE"
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Error deleting UPI", err);
+    return { success: false, message: "Network error" };
+  }
 };

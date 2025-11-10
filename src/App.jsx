@@ -24,6 +24,7 @@ import ProductPurchaseList from "./ProductPurchaseList";
 import SocialMedia from "./SocialMedia";
 import DemoAccounts from "./DemoAccounts";
 import CommissionSettings from "./CommissionSettings";
+import UPIDashboard from "./UPIDashboard";
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/CreateDemousers" element={<DemoAccounts />} />
         <Route path="/demousers" element={<Users isDemoUser={true}/>} />
         <Route path="/commissionSettings" element={<CommissionSettings/>} />
+        <Route path="/UPISettings" element={<UPIDashboard/>} />
        
        
         <Route path="/recharge" element={<Recharge />} />   {/* fixed typo */}
