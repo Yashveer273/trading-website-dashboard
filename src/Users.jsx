@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from "react";
 import {
   ChevronLeft,
@@ -12,10 +13,10 @@ import {
   Trash2,
 } from "lucide-react";
 import {
-  addRechargeApi,
+
   API_BASE_URL,
   deleteUser,
-  minusAmountApi,
+ 
   P_exp,
   searchuser,
 } from "./api";
@@ -659,6 +660,7 @@ const UserDetails = ({ selectedUserFromList, onBack, isDemoUser,deLoading }) => 
     productIncome,
     tasksReward,
     balance,
+    referralBy_Phone,
     tradePassword,
     Withdrawal,
     team1 = [],
@@ -773,6 +775,7 @@ const UserDetails = ({ selectedUserFromList, onBack, isDemoUser,deLoading }) => 
           <DetailItem label="Trade Password" value={tradePassword || "N/A"} />
           <DetailItem label="Referral Code" value={referralCode} />
           <DetailItem label="Referred By" value={referredBy || "None"} />
+          <DetailItem label="referral By Phone" value={referralBy_Phone || "None"} />
           <DetailItem label="Product Income" value={`₹${productIncome || 0}`} />
           <DetailItem label="Tasks Reward" value={`₹${tasksReward || 0}`} />
           <DetailItem label="Total Withdrawal" value={`₹${Withdrawal || 0}`} />
@@ -794,40 +797,18 @@ const UserDetails = ({ selectedUserFromList, onBack, isDemoUser,deLoading }) => 
             }}
           />
         </div>
-        <AddMyRecharge
-          userId={formatOid(_id)}
-          currentbalance={balance}
-          addrecharge={async (utr, amt, uid) => {
-            try {
-              const res = await addRechargeApi(utr, amt, uid);
-              alert(res.data.message || "Amount added successfully");
-              
-              deLoading("details","list");
-            } catch (err) {
-              alert(err.response?.data?.message || "Failed to add amount");
-            }
-          }}
-          minusAountAction={async (amt, uid) => {
-            try { 
-              const res = await minusAmountApi(amt, uid);
-              alert(res.data.message || "Amount deducted successfully");
-                deLoading("details","list");
-            } catch (err) {
-              alert(err.response?.data?.message || "Failed to deduct amount");
-            }
-          }}
-        />
+       
       </div>
 
       {/* --- TEAM DETAILS (L1, L2, L3) - Paginated API calls --- */}
       <div className="section-box">
-        <h2 className="h2-section">
+        <h3 >
           <Users
             style={{ width: 24, height: 24, marginRight: 12, color: "#4f46e5" }}
           />
-          Team Details (Total *Groups* will be accurate, Individuals shown are
-          per-page)
-        </h2>
+          Total All Teams Members {totalIndividualMembers}
+        </h3>
+        
         <div
           style={{
             width: "100%",

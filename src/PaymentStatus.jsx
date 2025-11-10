@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, CheckCircle, Loader2, X, AlertTriangle, ListChecks, DollarSign } from 'lucide-react';
+import { RefreshCw, CheckCircle, Loader2, X,Copy, AlertTriangle, ListChecks, DollarSign } from 'lucide-react';
 import './PaymentStatus.css'; // Import CSS
 import { API_BASE_URL } from './api';
 
@@ -98,16 +98,29 @@ const PaymentStatus = () => {
       setMessage(`Update failed: ${error.message}`);
     }
   }, [fetchPendingPayments]);
+const copyBankDetails = (bankDetails) => {
+  const text = `
+Holder Phone: ${bankDetails.phone||"non"}
+Holder userId: ${bankDetails.userId}
+Holder utr: ${bankDetails.utr}
+Holder amount: ${bankDetails.amount} INR
+  `.trim();
 
+         
+  navigator.clipboard.writeText(text)
+    .then(() => alert("User details copied!"))
+    .catch(() => alert("Failed to copy"));
+};
   const PaymentItem = ({ payment }) => (
     <div className="payment-card">
       <div className="payment-header">
         <div className="payment-user">
           <p>User ID: <span>{payment.userId}</span></p>
+          <p>User Phone No: <span>{payment?.phone||0}</span></p>
           <p>UTR: <span>{payment.utr}</span></p>
         </div>
         <p className="payment-amount">
-          <DollarSign className="icon" />
+          
           {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(payment.amount)}
         </p>
       </div>
@@ -127,6 +140,9 @@ const PaymentStatus = () => {
           </button>
           <button onClick={() => updatePaymentStatus(payment._id, "Reject")} disabled={isLoading} className="reject-btn">
             <X className="icon" /> Reject
+          </button>
+          <button  onClick={() => copyBankDetails(payment)} disabled={isLoading}   className="copy-btn"  >
+            <Copy className="icon" /> Copy
           </button>
         </div>
       </div>

@@ -9,8 +9,7 @@ import Recharge from "./Recharge";
 import { Routes, Route } from "react-router-dom";
 import Withdrawal from "./WithdrawHistory";
 import WithdrawRequest from "./withdrawRequest";
-import TeamIncome from "./TeamIncome";
-import ClaimHistory from "./ClaimHistory";
+
 
 import PaymentStatus from "./PaymentStatus";
 
@@ -45,8 +44,8 @@ function App() {
         <Route path="/WithdrawRequest" element={<WithdrawRequest />} />
         <Route path="/edit-product" element={<ManageProducts />} />
 
-        <Route path="/team-income" element={<TeamIncome/>}/>
-        <Route path="/claim-history" element={<ClaimHistory/>}/>
+      
+     
         
         <Route path="/payment-status" element={<PaymentStatus/>}/>
        

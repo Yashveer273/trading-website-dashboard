@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getCommission, updateCommission } from "./api";
+import { addRechargeApi, getCommission, minusAmountApi, updateCommission } from "./api";
+import AddMyRecharge from "./AddMyRecharge";
 
 const CommissionSettings = () => {
   const [level1, setLevel1] = useState("");
@@ -41,14 +42,28 @@ const CommissionSettings = () => {
   };
 
   return (
-    <div
-      style={{
+    <div  style={{
         padding: "20px",
         border: "2px solid #ddd",
         borderRadius: "12px",
         marginTop: "20px",
         width: "100%",
-      
+        overflow:"scroll",
+          marginLeft: "auto",
+        marginRight: "auto",
+        backgroundColor: "#f9f9f9",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+       
+      }}>
+
+     <div
+      style={{
+        padding: "20px",
+        border: "2px solid #ddd",
+        borderRadius: "12px",
+        marginTop: "20px",
+       
+      marginBottom:"20px",
         marginLeft: "auto",
         marginRight: "auto",
         backgroundColor: "#f9f9f9",
@@ -156,7 +171,37 @@ const CommissionSettings = () => {
           Refresh
         </button>
       </div>
+    </div> 
+
+     <AddMyRecharge
+          
+          
+          addrecharge={async (utr, amt, phone) => {
+            try {
+              const res = await addRechargeApi(utr, amt, phone);
+              console.log(res.data);
+              alert(res.data.message || "Amount added successfully");
+              
+            
+            } catch (err) {
+              console.log(err.response?.data.err);
+              alert(err.response?.data?.message || "Failed to add amount");
+            }
+          }}
+          minusAountAction={async (amt, phone) => {
+            try { 
+              const res = await minusAmountApi(amt, phone);
+              console.log(res.data.balance);
+              alert(res.data.message || "Amount deducted successfully");
+                
+            } catch (err) {
+              console.log(err.response?.data);
+              alert(err.response?.data?.error || "Failed to deduct amount");
+            }
+          }}
+        />
     </div>
+    
   );
 };
 

@@ -22,18 +22,18 @@ export const P_exp = async (userId, productId,exp) => {
   }
 };
 
-export const addRechargeApi = async (utr, amount, userId) => {
+export const addRechargeApi = async (utr, amount, phone) => {
   return await axios.post(`${API_BASE_URL}QR/api/Admin/recharge`, {
     utr,
     amount,
-    userId,
+    phone,
   });
 };
 
-export const minusAmountApi = async (amount, userId) => {
+export const minusAmountApi = async (amount, phone) => {
   return await axios.post(`${API_BASE_URL}QR/api/Admin/recharge/minus`, {
     amount,
-    userId,
+    phone,
   });
 };
 // Get all giftcodes (optional limit)

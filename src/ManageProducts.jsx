@@ -7,6 +7,7 @@ function ManageProducts() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(["Primary", "New", "Sessions", "Vip"]);
   const [selectedCategory, setSelectedCategory] = useState("Primary");
+
   const [newCategory, setNewCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -19,6 +20,7 @@ function ManageProducts() {
   const [productForm, setProductForm] = useState({
     name: "",
     price: "",
+    isdailyClaim:false,
     cycleType: "day",
     cycleValue: "",
     daily: "",
@@ -115,7 +117,7 @@ function ManageProducts() {
   };
 
   const handleAddProduct = async () => {
-    const { name, price, cycleType, cycleValue, daily, hour, image, badge, purchaseType,productExplanation  } = productForm;
+    const { name, price, cycleType, cycleValue, daily, hour, image, badge, purchaseType,productExplanation, isdailyClaim  } = productForm;
 console.log(productForm);
     if (!name || !price || !cycleValue || (cycleType === "day" && !daily) || (cycleType === "hour" && !hour)) {
       showMessage("Please fill all required fields!", "error");
@@ -127,6 +129,7 @@ console.log(productForm);
     }
     const formData = new FormData();
     formData.append("categoryName", selectedCategory ?? "");
+    formData.append("isdailyClaim", isdailyClaim ?? "");
     formData.append("productName", name ?? "");
     formData.append("price", price ?? "");
     formData.append("cycleType", cycleType ?? "");
@@ -160,6 +163,7 @@ console.log(productForm);
         cycleValue: "",
         daily: "",
         hour: "",
+        isdailyClaim:false,
         image: null,
         badge: "non",
         purchaseType: "One time buy",
@@ -177,6 +181,7 @@ console.log(productForm);
 
     setSelectedCategory(product.categoryName);
     setProductForm({
+      isdailyClaim:product.isdailyClaim||false,
       name: product.productName,
       price: product.price,
       cycleType: product.cycleType,
@@ -301,6 +306,14 @@ console.log(productForm);
             <option value="All time">All time</option>
           </select>
         </div>
+<div>
+          <label>is Daily Claim</label>
+          <select name="isdailyClaim" required value={productForm.isdailyClaim} onChange={handleInputChange}>
+            <option value={true}>Yes</option>
+            <option value={false}>No</option>
+          </select>
+        </div>
+
 
 <div>
   <label >Product Explanations</label>
@@ -337,7 +350,7 @@ console.log(productForm);
             <thead>
               <tr>
                 <th>Image</th><th>Name</th><th>Category</th><th>Price</th>
-                <th>Cycle Type</th><th>Cycle Value</th><th>Daily</th>
+                <th>Cycle Type</th><th>Cycle Value</th><th>Daily</th><th>Is Daily Claim Product</th>
                 <th>Total Day</th><th>Hourly</th><th>Total Hour</th><th>Badge</th><th>Purchase Type</th><th>Actions</th>
               </tr>
             </thead>
@@ -345,6 +358,7 @@ console.log(productForm);
               {filteredProducts.map((item) => {
                 const totalDay = Number(item.dailyIncome || item.daily) * Number(item.cycleValue);
                 const totalHour = Number(item.hourIncome || item.hour) * Number(item.cycleValue);
+                console.log(item)
                 return (
                   <tr key={item._id}>
                     <td>{item.imageUrl && <img src={`${API_BASE_URL2}${item.imageUrl}`} alt={item.productName || item.name} width="50" />}</td>
@@ -354,6 +368,7 @@ console.log(productForm);
                     <td>{item.cycleType}</td>
                     <td>{item.cycleValue}</td>
                     <td>{item.dailyIncome || item.daily}</td>
+                    <td>{item.isdailyClaim==true?"Yes":"No"}</td>
                     <td>{totalDay}</td>
                     <td>{item.hourIncome || item.hour}</td>
                     <td>{totalHour}</td>

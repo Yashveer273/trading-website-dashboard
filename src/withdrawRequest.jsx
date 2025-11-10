@@ -24,7 +24,7 @@ const WithdrawRequest = () => {
   const [withdrawals, setWithdrawals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [bankDetails, setBankDetails] = useState(null);
+  const [bankDetails, setBankDetails] = useState({userId:"", data:{},phone:""});
 
   const MessageDisplay = ({ text }) => {
     if (!text) return null;
@@ -97,15 +97,32 @@ const WithdrawRequest = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
       });
-      const data = await handleResponse(res);
+     const  data = await handleResponse(res);
       if (!res.ok) throw new Error(data.message || 'Failed to fetch bank details');
-      setBankDetails(data.bankDetails);
+
+      setBankDetails({userId,data:data.bankDetails,phone:data.phone});
       setMessage('Bank details fetched successfully.');
     } catch (error) {
       setMessage(`Error: ${error.message}`);
       setBankDetails(null);
     }
   };
+const copyBankDetails = (bankDetails,amount) => {
+  const text = `
+Holder Phone: ${bankDetails.phone||"non"}
+Holder Name: ${bankDetails.data.holderName}
+Account Number: ${bankDetails.data.accountNumber}
+IFSC: ${bankDetails.data.ifscCode}
+Bank Name: ${bankDetails.data.bankName}
+UPI ID: ${bankDetails.data.upiId||"non"}
+Amount: ${amount||"0"} INR
+  `.trim();
+
+         
+  navigator.clipboard.writeText(text)
+    .then(() => alert("Bank details copied!"))
+    .catch(() => alert("Failed to copy"));
+};
 
   const WithdrawItem = ({ item }) => (
     <div className="transaction-card">
@@ -140,16 +157,25 @@ const WithdrawRequest = () => {
           disabled={isLoading}
           className="show-bank-btn"
         >
-           Show Bank
+           Show Details
         </button>
       </div>
-      {bankDetails && (
+      {bankDetails.data && item.user?._id==bankDetails.userId && (
         <div className="bank-details">
-          <p>Holder Name: <span>{bankDetails.holderName}</span></p>
-          <p>Account Number: <span>{bankDetails.accountNumber}</span></p>
-          <p>IFSC: <span>{bankDetails.ifscCode}</span></p>
-          <p>Bank Name: <span>{bankDetails.bankName}</span></p>
-          <p>UPI ID: <span>{bankDetails.upiId}</span></p>
+        
+          <p>Holder Name: <span>{bankDetails.data.holderName}</span></p>
+          <p>Holder Phone: <span>  {bankDetails.phone}</span></p>
+          <p>Account Number: <span>{bankDetails.data.accountNumber}</span></p>
+          <p>IFSC: <span>{bankDetails.data.ifscCode}</span></p>
+          <p>Bank Name: <span>{bankDetails.data.bankName}</span></p>
+          <p>UPI ID: <span>{bankDetails.data.upiId}</span></p>
+         
+          <button
+      className="copy-btn"
+      onClick={() => copyBankDetails(bankDetails, item.amount)}
+    >
+      Copy Details
+    </button>
         </div>
       )}
     </div>
