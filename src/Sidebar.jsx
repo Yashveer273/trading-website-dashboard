@@ -21,10 +21,14 @@ import {
 } from "react-icons/bs";
 
 function Sidebar() {
+  
   const [isOpen, setIsOpen] = useState(true);
 
   const toggleSidebar = () => setIsOpen(prev => !prev);
-
+ const handleLogout = () => {
+    localStorage.removeItem("realStateLoggedUser");
+  window.location.reload();
+  };
   return (
     <>
     <div className="sidebar-toggle" onClick={toggleSidebar}>
@@ -39,7 +43,12 @@ function Sidebar() {
            
           
           </div>
-
+<span
+            onClick={handleLogout}
+            style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+          >
+            <BsPower className="icon" /> Logout
+          </span>
           <ul className="sidebar-menu">
             <li className="sidebar-item">
               <Link to="/"><BsGrid1X2Fill className="icon" /> Product Purchase History</Link>
@@ -51,6 +60,9 @@ function Sidebar() {
             </li>
             <li className="sidebar-item">
               <Link to="/demousers"><BsPeopleFill className="icon" />Demo Users</Link>
+            </li>
+             <li className="sidebar-item">
+              <Link to="/SubordinateManager"><BsPeopleFill className="icon" />Subordinate Manager</Link>
             </li>
              <li className="sidebar-item">
               <Link to="/commissionSettings"><BsPercent className="icon" />commission Settings</Link>
@@ -91,9 +103,7 @@ function Sidebar() {
            <li className="sidebar-item">
               <Link to="/socialMedia"><BsTelegram  className="icon" /> Social Media</Link>
             </li>
-            <li className="sidebar-item">
-              <Link to="/logout"><BsPower className="icon" /> Logout</Link>
-            </li>
+             
           </ul>
         </>
       )}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import './App.css';
 
 import Sidebar from "./Sidebar";
@@ -25,9 +25,22 @@ import SocialMedia from "./SocialMedia";
 import DemoAccounts from "./DemoAccounts";
 import CommissionSettings from "./CommissionSettings";
 import UPIDashboard from "./UPIDashboard";
+import AuthCard from "./AuthCard";
+import SubordinateManager from "./SubordinateManager";
 
 
 function App() {
+  const [loggedUser, setLoggedUser] = useState(null);
+
+  // Check localStorage for logged user on page load
+  useEffect(() => {
+    const user = localStorage.getItem("realStateLoggedUser");
+    if (user) setLoggedUser(JSON.parse(user));
+  }, []);
+  
+   if (!loggedUser) {
+    return <AuthCard onLoginSuccess={setLoggedUser} />;
+  }
   return (
     <div className="grid-container">
       {/* <Header /> */}
@@ -39,6 +52,7 @@ function App() {
         <Route path="/demousers" element={<Users isDemoUser={true}/>} />
         <Route path="/commissionSettings" element={<CommissionSettings/>} />
         <Route path="/UPISettings" element={<UPIDashboard/>} />
+        <Route path="/SubordinateManager" element={<SubordinateManager/>} />
        
        
         <Route path="/recharge" element={<Recharge />} />   {/* fixed typo */}

@@ -1,10 +1,10 @@
 import axios from "axios";
 
 // Base URL for the backend API
-// export const API_BASE_URL = "http://localhost:5004/"; 
-// export const API_BASE_URL2 = "http://localhost:5004"; 
-export const API_BASE_URL = "https://bdgwin.com.co/";
-export const API_BASE_URL2 = "https://bdgwin.com.co";
+export const API_BASE_URL = "http://localhost:5004/"; 
+export const API_BASE_URL2 = "http://localhost:5004"; 
+// export const API_BASE_URL = "https://bdgwin.com.co/";
+// export const API_BASE_URL2 = "https://bdgwin.com.co";
 export const registerUser = async (userData) => {
   
     const res = await axios.post(`${API_BASE_URL}api/users/register`, userData);
@@ -439,4 +439,117 @@ export const deleteUPI = async (id) => {
     console.error("Error deleting UPI", err);
     return { success: false, message: "Network error" };
   }
+};
+
+
+
+export const sendOtp=async(phone)=>{ const res = await fetch(`${API_BASE_URL}api/users/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      return res;
+    }
+
+
+// 1️⃣ Check if admin can register
+export const checkAdminExist = async (phone) => {
+  const res = await fetch(`${API_BASE_URL}api/users/check-admin-exist`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone }),
+  });
+  return await res.json(); // returns { success, exists, message }
+};
+
+export const registerAdmin = async (phone, password) => {
+  const res = await fetch(`${API_BASE_URL}api/users/create-admin`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, password }),
+  });
+  return await res.json(); // { success, admin, message }
+};
+
+// 5️⃣ Login Admin
+export const loginAdmin = async (phone, password) => {
+  const res = await fetch(`${API_BASE_URL}api/users/admin-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, password }),
+  });
+  return await res.json(); // { success, token, message }
+};
+// api.js
+
+export const createSubordinate = async (adminPhone, adminPassword, phone, password) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}api/users/create-subordinate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        adminPhone,
+        adminPassword,
+        phone,
+        password,
+      }),
+    });
+
+    return await res.json(); // { success, subordinate, message }
+  } catch (err) {
+    console.error("Create Subordinate Error:", err);
+    return { success: false, message: "Server error" };
+  }
+};
+
+// 6️⃣ Login Subordinate
+export const loginSubordinate = async (phone, password) => {
+  const res = await fetch(`${API_BASE_URL}api/users/subordinate-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, password }),
+  });
+  return await res.json(); // { success, token, message }
+};
+
+// 7️⃣ Get All Subordinate List (for admin dashboard)
+export const getAllSubordinateList = async (adminPhone, adminPassword) => {
+  const res = await fetch(`${API_BASE_URL}api/users/subordinate`, {
+    method: "POST", // Ensure method is uppercase POST
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ adminPhone, adminPassword }) // <-- stringify JSON
+  });
+  return await res.json(); // { success, subordinates: [...] }
+};
+
+
+// 8️⃣ Update Subordinate by ID
+export const updateSubordinate = async (subId, adminPassword,adminPhone, editPhone,editPassword) => {
+  const res = await fetch(`${API_BASE_URL}api/users/subordinate/${subId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json",  },
+    body: JSON.stringify({editPhone,editPassword,adminPassword,adminPhone}), // { phone?, password? }
+  });
+  return await res.json();
+};
+
+// 9️⃣ Delete Subordinate by ID
+export const deleteSubordinate = async (subId) => {
+  const res = await fetch(`${API_BASE_URL}api/users/subordinate/${subId}`, {
+    method: "DELETE",
+        
+    headers: { "Content-Type": "application/json", },
+  });
+  return await res.json();
+};
+
+export const forgetAdminPassword = async (phone, newPassword) => {
+  const res = await fetch(`${API_BASE_URL}api/users/forget-admin-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, newPassword }),
+  });
+  return await res.json(); // { success, message, token }
 };
