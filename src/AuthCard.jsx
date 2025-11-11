@@ -8,7 +8,7 @@ import {
   forgetAdminPassword
 } from "./api";
 
-const allowedAdminNumber = "8218326519";
+const allowedAdminNumber = "9522575732";
 
 const AuthCard = ({ onLoginSuccess }) => {
   const [phone, setPhone] = useState("");
